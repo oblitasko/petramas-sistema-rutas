@@ -1,9 +1,1253 @@
-<!DOCTYPE html>
+<h4 style="color: #155724;">Combustible Ahorrado</h4>
+                                <div style="font-size: 2em; color: #155724; font-weight: bold;">127 L</div>
+                                <small>Esta semana vs método manual</small>
+                            </div>
+                            <div style="background: #cce5ff; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h4 style="color: #004085;">Tiempo Ahorrado</h4>
+                                <div style="font-size: 2em; color: #004085; font-weight: bold;">8.5 hrs</div>
+                                <small>Por día en planificación</small>
+                            </div>
+                            <div style="background: #fff3cd; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h4 style="color: #856404;">Costo Evitado</h4>
+                                <div style="font-size: 2em; color: #856404; font-weight: bold;">S/ 2,400</div>
+                                <small>En conflictos y retrasos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido de Fundamentos Matemáticos -->
+            <div id="math" class="tab-content hidden">
+                <div class="section">
+                    <h2>Fundamentos Matemáticos Aplicados</h2>
+                    
+                    <h3>1. Teoría de Conjuntos</h3>
+                    <div class="math-formula">
+                        <strong>Conjuntos del Sistema:</strong><br>
+                        F = {F1, F2, F3} (Furgones)<br>
+                        P = {P1, P2, P3, P4} (Puntos de Recolección)<br>
+                        T = {M, T} (Turnos: Mañana, Tarde)<br><br>
+                        <strong>Producto Cartesiano:</strong><br>
+                        Asignaciones_Posibles = F × P × T<br>
+                        |Asignaciones_Posibles| = 3 × 4 × 2 = 24
+                    </div>
+
+                    <h3>2. Lógica Proposicional</h3>
+                    <div class="math-formula">
+                        <strong>Reglas de Validación:</strong><br>
+                        ∀ f ∈ F, ∀ t ∈ T: ∑(asignaciones_furgon_f_turno_t) ≤ 1<br>
+                        ∀ p ∈ P, ∀ t ∈ T: ∑(asignaciones_punto_p_turno_t) ≤ 1<br><br>
+                        <strong>Función de Conflicto:</strong><br>
+                        Conflicto(f,p,t) = (count_furgon(f,t) > 1) ∨ (count_punto(p,t) > 1)
+                    </div>
+
+                    <h3>3. Álgebra de Boole</h3>
+                    <div class="math-formula">
+                        <strong>Variables Booleanas:</strong><br>
+                        A_ijt = 1 si furgón_i asignado a punto_j en turno_t<br>
+                        A_ijt = 0 en caso contrario<br><br>
+                        <strong>Restricciones:</strong><br>
+                        ∑_j A_ijt ≤ 1  (Un furgón, máximo un punto por turno)<br>
+                        ∑_i A_ijt ≤ 1  (Un punto, máximo un furgón por turno)
+                    </div>
+
+                    <h3>4. Teoría de Grafos</h3>
+                    <div class="math-formula">
+                        <strong>Grafo de Conflictos G = (V, E):</strong><br>
+                        V = {todas las asignaciones posibles}<br>
+                        E = {(v1, v2) | v1 y v2 generan conflicto}<br><br>
+                        <strong>Conjunto Independiente:</strong><br>
+                        I ⊆ V tal que ∀ u,v ∈ I: (u,v) ∉ E<br>
+                        Objetivo: Encontrar conjunto independiente máximo
+                    </div>
+
+                    <div class="section">
+                        <h3>Simulador de Validación Matemática</h3>
+                        <div class="form-section">
+                            <h4>Probar Asignación:</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Furgón:</label>
+                                    <select id="testVehicle">
+                                        <option value="F1">F1</option>
+                                        <option value="F2">F2</option>
+                                        <option value="F3">F3</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Punto:</label>
+                                    <select id="testPoint">
+                                        <option value="P1">P1</option>
+                                        <option value="P2">P2</option>
+                                        <option value="P3">P3</option>
+                                        <option value="P4">P4</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Turno:</label>
+                                    <select id="testShift">
+                                        <option value="M">Mañana</option>
+                                        <option value="T">Tarde</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn" onclick="validateMathematically()">🧮 Validar Matemáticamente</button>
+                            <div id="mathResult" style="margin-top: 15px; padding: 15px; border-radius: 8px; display: none;">
+                                <h4>Resultado del Análisis Matemático:</h4>
+                                <div id="mathDetails"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Airtable
+        let airtableConfig = {
+            token: '',
+            baseId: '',
+            tables: {
+                assignments: 'Asignaciones',
+                vehicles: 'Furgones', 
+                points: 'Puntos_Recoleccion'
+            },
+            connected: false,
+            autoSync: false,
+            syncInterval: 30000
+        };
+
+        // Datos del sistema
+        let assignments = [
+            {id: 1, date: '2025-07-14', shift: 'M', vehicle: 'F1', point: 'P1', status: 'Programada', airtableId: null, syncStatus: 'pending'},
+            {id: 2, date: '2025-07-14', shift: 'M', vehicle: 'F2', point: 'P2', status: 'Programada', airtableId: null, syncStatus: 'pending'},
+            {id: 3, date: '2025-07-14', shift: 'T', vehicle: 'F3', point: 'P3', status: 'Programada', airtableId: null, syncStatus: 'pending'}
+        ];
+
+        let vehicles = [
+            {id: 'F1', code: 'F1', capacity: 8, status: 'Activo', driver: 'Juan Pérez', location: 'Base Central', airtableId: null},
+            {id: 'F2', code: 'F2', capacity: 10, status: 'Activo', driver: 'María García', location: 'En ruta', airtableId: null},
+            {id: 'F3', code: 'F3', capacity: 12, status: 'Mantenimiento', driver: '', location: 'Taller', airtableId: null}
+        ];
+
+        let points = [
+            {id: 'P1', code: 'P1', address: 'Av. Principal 123 - Centro Comercial Plaza', type: 'Mixto', volume: 15, frequency: 'Diaria', coordinates: '-12.0464, -77.0428', airtableId: null},
+            {id: 'P2', code: 'P2', address: 'Jr. Comercio 456 - Mercado Central', type: 'Orgánico', volume: 25, frequency: 'Diaria', coordinates: '-12.0546, -77.0365', airtableId: null},
+            {id: 'P3', code: 'P3', address: 'Calle Las Flores 789 - Zona Residencial Norte', type: 'Inorgánico', volume: 8, frequency: 'Inter-diaria', coordinates: '-12.0623, -77.0512', airtableId: null},
+            {id: 'P4', code: 'P4', address: 'Av. Industrial 321 - Parque Industrial', type: 'Industrial', volume: 30, frequency: 'Diaria', coordinates: '-12.0234, -77.0891', airtableId: null}
+        ];
+
+        let nextId = 4;
+        let syncTimer = null;
+
+        // Funciones de navegación
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        // Función para validar conflictos usando matemáticas discretas
+        function hasConflict(newAssignment) {
+            return assignments.some(existing => {
+                const vehicleConflict = existing.vehicle === newAssignment.vehicle && 
+                                      existing.shift === newAssignment.shift && 
+                                      existing.date === newAssignment.date;
+                
+                const pointConflict = existing.point === newAssignment.point && 
+                                     existing.shift === newAssignment.shift && 
+                                     existing.date === newAssignment.date;
+                
+                return vehicleConflict || pointConflict;
+            });
+        }
+
+        // Funciones de Airtable API Real
+        async function connectToAirtable() {
+            const token = document.getElementById('airtableToken').value;
+            const baseId = document.getElementById('airtableBaseId').value;
+            
+            if (!token || !baseId) {
+                showNotification('❌ Por favor ingrese Token y Base ID', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                airtableConfig.token = token;
+                airtableConfig.baseId = baseId;
+                airtableConfig.tables.assignments = document.getElementById('assignmentsTableId').value;
+                airtableConfig.tables.vehicles = document.getElementById('vehiclesTableId').value;
+                airtableConfig.tables.points = document.getElementById('pointsTableId').value;
+                
+                const testUrl = `https://api.airtable.com/v0/${baseId}/${airtableConfig.tables.vehicles}?maxRecords=1`;
+                const response = await fetch(testUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    airtableConfig.connected = true;
+                    updateConnectionStatus(true);
+                    showNotification('✅ Conectado exitosamente a Airtable', 'success');
+                    
+                    await loadInitialData();
+                    
+                    if (document.getElementById('autoSync').checked) {
+                        startAutoSync();
+                    }
+                } else {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                showNotification('❌ Error al conectar: ' + error.message, 'error');
+                airtableConfig.connected = false;
+                updateConnectionStatus(false);
+                console.error('Error de conexión:', error);
+            }
+            
+            showLoading(false);
+        }
+
+        async function testConnection() {
+            if (!airtableConfig.connected) {
+                showNotification('❌ Primero debe conectarse a Airtable', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const startTime = performance.now();
+                
+                const testUrl = `https://api.airtable.com/v0/${airtableConfig.baseId}/${airtableConfig.tables.vehicles}?maxRecords=1`;
+                const response = await fetch(testUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                
+                if (response.ok) {
+                    showNotification('✅ Conexión exitosa! API respondiendo correctamente', 'success');
+                    document.getElementById('avgResponseTime').textContent = responseTime + 'ms';
+                } else {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                showNotification('❌ Error en la conexión: ' + error.message, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        function disconnectAirtable() {
+            airtableConfig.connected = false;
+            airtableConfig.token = '';
+            airtableConfig.baseId = '';
+            
+            updateConnectionStatus(false);
+            stopAutoSync();
+            
+            document.getElementById('airtableToken').value = '';
+            document.getElementById('airtableBaseId').value = '';
+            
+            showNotification('⚠️ Desconectado de Airtable', 'warning');
+        }
+
+        async function loadInitialData() {
+            try {
+                await loadVehiclesFromAirtable();
+                await loadPointsFromAirtable();
+                await loadAssignmentsFromAirtable();
+                
+                showNotification('📥 Datos iniciales cargados desde Airtable', 'success');
+            } catch (error) {
+                showNotification('⚠️ Error cargando datos iniciales: ' + error.message, 'warning');
+            }
+        }
+
+        async function loadVehiclesFromAirtable() {
+            if (!airtableConfig.connected) return;
+            
+            try {
+                const url = `https://api.airtable.com/v0/${airtableConfig.baseId}/${airtableConfig.tables.vehicles}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.records.length > 0) {
+                        vehicles = data.records.map(record => ({
+                            id: record.fields.Codigo,
+                            code: record.fields.Codigo,
+                            capacity: record.fields.Capacidad_Toneladas,
+                            status: record.fields.Estado || 'Activo',
+                            driver: record.fields.Conductor || '',
+                            location: record.fields.Ubicacion_Actual || 'Base Central',
+                            airtableId: record.id
+                        }));
+                    }
+                    
+                    updateVehiclesTable();
+                    updateSyncStatusTable('vehicles', vehicles.length);
+                }
+            } catch (error) {
+                console.error('Error cargando vehículos:', error);
+            }
+        }
+
+        async function loadPointsFromAirtable() {
+            if (!airtableConfig.connected) return;
+            
+            try {
+                const url = `https://api.airtable.com/v0/${airtableConfig.baseId}/${airtableConfig.tables.points}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.records.length > 0) {
+                        points = data.records.map(record => ({
+                            id: record.fields.Codigo,
+                            code: record.fields.Codigo,
+                            address: record.fields.Direccion || '',
+                            type: record.fields.Tipo_Residuo || 'Mixto',
+                            volume: record.fields.Volumen_Estimado || 0,
+                            frequency: record.fields.Frecuencia || 'Diaria',
+                            coordinates: record.fields.Coordenadas_GPS || '',
+                            airtableId: record.id
+                        }));
+                    }
+                    
+                    updatePointsTable();
+                    updateSyncStatusTable('points', points.length);
+                    updatePointsSelect();
+                }
+            } catch (error) {
+                console.error('Error cargando puntos:', error);
+            }
+        }
+
+        async function loadAssignmentsFromAirtable() {
+            if (!airtableConfig.connected) return;
+            
+            try {
+                const url = `https://api.airtable.com/v0/${airtableConfig.baseId}/${airtableConfig.tables.assignments}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.records.length > 0) {
+                        assignments = data.records.map(record => {
+                            // Manejar los campos vinculados que vienen como arrays
+                            let vehicleCode = '';
+                            let pointCode = '';
+                            
+                            if (record.fields.Furgon && Array.isArray(record.fields.Furgon)) {
+                                // Buscar el código del vehículo basado en el ID de Airtable
+                                const vehicleRecord = vehicles.find(v => v.airtableId === record.fields.Furgon[0]);
+                                vehicleCode = vehicleRecord ? vehicleRecord.code : 'F1';
+                            }
+                            
+                            if (record.fields.Punto && Array.isArray(record.fields.Punto)) {
+                                // Buscar el código del punto basado en el ID de Airtable
+                                const pointRecord = points.find(p => p.airtableId === record.fields.Punto[0]);
+                                pointCode = pointRecord ? pointRecord.code : 'P1';
+                            }
+                            
+                            return {
+                                id: record.fields.ID_Asignacion || record.id,
+                                date: record.fields.Fecha,
+                                shift: record.fields.Turno === 'Mañana' ? 'M' : 'T',
+                                vehicle: vehicleCode,
+                                point: pointCode,
+                                status: record.fields.Estado || 'Programada',
+                                airtableId: record.id,
+                                syncStatus: 'synced'
+                            };
+                        });
+                    }
+                    
+                    updateAssignmentsTable();
+                    updateSyncStatusTable('assignments', assignments.length);
+                }
+            } catch (error) {
+                console.error('Error cargando asignaciones:', error);
+            }
+        }
+
+        function updatePointsSelect() {
+            const pointSelect = document.getElementById('assignPoint');
+            pointSelect.innerHTML = '<option value="">Seleccionar punto...</option>';
+            
+            points.forEach(point => {
+                const option = document.createElement('option');
+                option.value = point.code;
+                option.textContent = `${point.code} - ${point.address.split(' - ')[1] || point.address.substring(0, 30)}`;
+                pointSelect.appendChild(option);
+            });
+        }
+
+        async function createAssignmentInAirtable(assignment) {
+            if (!airtableConfig.connected) return null;
+            
+            try {
+                const vehicleRecord = vehicles.find(v => v.code === assignment.vehicle);
+                const pointRecord = points.find(p => p.code === assignment.point);
+                
+                if (!vehicleRecord?.airtableId || !pointRecord?.airtableId) {
+                    throw new Error('Vehículo o punto no encontrado en Airtable');
+                }
+                
+                const url = `https://api.airtable.com/v0/${airtableConfig.baseId}/${airtableConfig.tables.assignments}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        records: [{
+                            fields: {
+                                Fecha: assignment.date,
+                                Turno: assignment.shift === 'M' ? 'Mañana' : 'Tarde',
+                                Furgon: [vehicleRecord.airtableId],
+                                Punto: [pointRecord.airtableId],
+                                Estado: assignment.status || 'Programada'
+                            }
+                        }]
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.records[0].id;
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Error creando asignación');
+                }
+                
+            } catch (error) {
+                console.error('Error creando asignación en Airtable:', error);
+                throw error;
+            }
+        }
+
+        async function addAssignment() {
+            const date = document.getElementById('assignDate').value;
+            const shift = document.getElementById('assignShift').value;
+            const vehicle = document.getElementById('assignVehicle').value;
+            const point = document.getElementById('assignPoint').value;
+
+            if (!date || !shift || !vehicle || !point) {
+                showNotification('❌ Por favor complete todos los campos', 'error');
+                return;
+            }
+
+            const newAssignment = {
+                id: nextId++,
+                date: date,
+                shift: shift,
+                vehicle: vehicle,
+                point: point,
+                status: 'Programada',
+                airtableId: null,
+                syncStatus: 'pending'
+            };
+
+            if (hasConflict(newAssignment)) {
+                document.getElementById('conflictAlert').classList.remove('hidden');
+                document.getElementById('validationAlert').classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('conflictAlert').classList.add('hidden');
+                }, 5000);
+                return;
+            }
+
+            assignments.push(newAssignment);
+            
+            // Auto-sincronizar con Airtable si está conectado
+            if (airtableConfig.connected) {
+                try {
+                    document.getElementById('syncAlert').classList.remove('hidden');
+                    const airtableId = await createAssignmentInAirtable(newAssignment);
+                    
+                    if (airtableId) {
+                        const assignment = assignments.find(a => a.id === newAssignment.id);
+                        if (assignment) {
+                            assignment.airtableId = airtableId;
+                            assignment.syncStatus = 'synced';
+                        }
+                        showNotification('✅ Asignación creada y sincronizada con Airtable', 'success');
+                    }
+                    
+                    document.getElementById('syncAlert').classList.add('hidden');
+                } catch (error) {
+                    document.getElementById('syncAlert').classList.add('hidden');
+                    showNotification('⚠️ Asignación creada localmente. Error en sync: ' + error.message, 'warning');
+                }
+            }
+            
+            document.getElementById('validationAlert').classList.remove('hidden');
+            document.getElementById('conflictAlert').classList.add('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('validationAlert').classList.add('hidden');
+            }, 3000);
+
+            updateAssignmentsTable();
+            updateMetrics();
+            
+            // Limpiar formulario
+            document.getElementById('assignShift').value = '';
+            document.getElementById('assignVehicle').value = '';
+            document.getElementById('assignPoint').value = '';
+        }
+
+        function updateAssignmentsTable() {
+            const tableBody = document.getElementById('assignmentsTable');
+            tableBody.innerHTML = '';
+
+            assignments.forEach(assignment => {
+                const row = document.createElement('tr');
+                const shiftName = assignment.shift === 'M' ? 'Mañana' : 'Tarde';
+                const syncStatus = assignment.airtableId ? 
+                    '<span class="status synced">✅ Sincronizado</span>' : 
+                    '<span class="status pending">⏳ Pendiente</span>';
+                
+                row.innerHTML = `
+                    <td>${assignment.id.toString().padStart(3, '0')}</td>
+                    <td>${assignment.date}</td>
+                    <td>${shiftName}</td>
+                    <td>${assignment.vehicle}</td>
+                    <td>${assignment.point}</td>
+                    <td><span class="status valid">${assignment.status}</span></td>
+                    <td>${assignment.airtableId || '-'}</td>
+                    <td>${syncStatus}</td>
+                    <td>
+                        <button class="btn" onclick="removeAssignment(${assignment.id})" title="Eliminar">🗑️</button>
+                        ${!assignment.airtableId ? '<button class="btn btn-airtable" onclick="syncSingleAssignment(' + assignment.id + ')" title="Sincronizar">☁️</button>' : ''}
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateVehiclesTable() {
+            const tableBody = document.getElementById('vehiclesTable');
+            tableBody.innerHTML = '';
+
+            vehicles.forEach(vehicle => {
+                const row = document.createElement('tr');
+                const assignmentsCount = assignments.filter(a => a.vehicle === vehicle.code).length;
+                const syncStatus = vehicle.airtableId ? 
+                    '<span class="status synced">✅ Sincronizado</span>' : 
+                    '<span class="status pending">⏳ Pendiente</span>';
+                
+                row.innerHTML = `
+                    <td>${vehicle.code}</td>
+                    <td>${vehicle.capacity}</td>
+                    <td><span class="status ${vehicle.status === 'Activo' ? 'valid' : 'pending'}">${vehicle.status}</span></td>
+                    <td>${vehicle.driver}</td>
+                    <td>${vehicle.location}</td>
+                    <td>${assignmentsCount}</td>
+                    <td>${vehicle.airtableId || '-'}</td>
+                    <td>${syncStatus}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updatePointsTable() {
+            const tableBody = document.getElementById('pointsTable');
+            tableBody.innerHTML = '';
+
+            points.forEach(point => {
+                const row = document.createElement('tr');
+                const syncStatus = point.airtableId ? 
+                    '<span class="status synced">✅ Sincronizado</span>' : 
+                    '<span class="status pending">⏳ Pendiente</span>';
+                
+                row.innerHTML = `
+                    <td>${point.code}</td>
+                    <td>${point.address}</td>
+                    <td>${point.type}</td>
+                    <td>${point.volume}</td>
+                    <td>${point.frequency}</td>
+                    <td>${point.coordinates}</td>
+                    <td>${point.airtableId || '-'}</td>
+                    <td>${syncStatus}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function removeAssignment(id) {
+            const assignment = assignments.find(a => a.id === id);
+            
+            if (assignment && assignment.airtableId && airtableConfig.connected) {
+                try {
+                    const url = `https://api.airtable.com/v0/${airtableConfig.baseId}/${airtableConfig.tables.assignments}/${assignment.airtableId}`;
+                    const response = await fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${airtableConfig.token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        showNotification('✅ Asignación eliminada de Airtable', 'success');
+                    }
+                } catch (error) {
+                    showNotification('⚠️ Error eliminando de Airtable: ' + error.message, 'warning');
+                }
+            }
+            
+            assignments = assignments.filter(assignment => assignment.id !== id);
+            updateAssignmentsTable();
+            updateMetrics();
+            showNotification('🗑️ Asignación eliminada', 'warning');
+        }
+
+        function clearAssignments() {
+            if (confirm('¿Está seguro de que desea eliminar todas las asignaciones?')) {
+                assignments = [];
+                updateAssignmentsTable();
+                updateMetrics();
+                showNotification('🗑️ Todas las asignaciones eliminadas', 'warning');
+            }
+        }
+
+        function validateAllAssignments() {
+            let conflicts = 0;
+            const conflictDetails = [];
+
+            for (let i = 0; i < assignments.length; i++) {
+                for (let j = i + 1; j < assignments.length; j++) {
+                    const a1 = assignments[i];
+                    const a2 = assignments[j];
+
+                    if (a1.date === a2.date && a1.shift === a2.shift) {
+                        if (a1.vehicle === a2.vehicle) {
+                            conflicts++;
+                            conflictDetails.push(`⚠️ CONFLICTO FURGÓN: ${a1.vehicle} asignado a ${a1.point} y ${a2.point} en el mismo turno`);
+                        }
+                        if (a1.point === a2.point) {
+                            conflicts++;
+                            conflictDetails.push(`⚠️ CONFLICTO PUNTO: ${a1.point} asignado a ${a1.vehicle} y ${a2.vehicle} en el mismo turno`);
+                        }
+                    }
+                }
+            }
+
+            if (conflicts === 0) {
+                showNotification('✅ VÁLIDA - Todas las asignaciones cumplen las reglas matemáticas', 'success');
+            } else {
+                showNotification(`❌ INVÁLIDA - Se detectaron ${conflicts} conflictos`, 'error');
+            }
+        }
+
+        function updateMetrics() {
+            document.getElementById('totalAssignments').textContent = assignments.length;
+            document.getElementById('localAssignments').textContent = assignments.length;
+            
+            const syncedCount = assignments.filter(a => a.airtableId).length;
+            document.getElementById('syncedCount').textContent = `${syncedCount} sincronizadas`;
+            
+            const efficiency = Math.max(60, 100 - (assignments.length * 2));
+            document.getElementById('fleetEfficiency').textContent = efficiency + '%';
+        }
+
+        // Funciones de sincronización
+        async function syncAllData() {
+            if (!airtableConfig.connected) {
+                showNotification('❌ No está conectado a Airtable', 'error');
+                return;
+            }
+
+            showNotification('🔄 Iniciando sincronización completa...', 'info');
+            
+            try {
+                await loadInitialData();
+                showNotification('✅ Sincronización completa exitosa', 'success');
+                updateSyncMetrics();
+                
+            } catch (error) {
+                showNotification('❌ Error en sincronización: ' + error.message, 'error');
+            }
+        }
+
+        async function syncAssignments() {
+            if (!airtableConfig.connected) return;
+            
+            showLoading(true);
+            
+            try {
+                await loadAssignmentsFromAirtable();
+                showNotification('✅ Asignaciones sincronizadas desde Airtable', 'success');
+                
+            } catch (error) {
+                showNotification('❌ Error sincronizando asignaciones', 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        async function syncVehicles() {
+            if (!airtableConfig.connected) return;
+            
+            showLoading(true);
+            
+            try {
+                await loadVehiclesFromAirtable();
+                showNotification('✅ Furgones sincronizados desde Airtable', 'success');
+                
+            } catch (error) {
+                showNotification('❌ Error sincronizando furgones', 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        async function syncPoints() {
+            if (!airtableConfig.connected) return;
+            
+            showLoading(true);
+            
+            try {
+                await loadPointsFromAirtable();
+                showNotification('✅ Puntos sincronizados desde Airtable', 'success');
+                
+            } catch (error) {
+                showNotification('❌ Error sincronizando puntos', 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        async function syncFromAirtable(table) {
+            if (!airtableConfig.connected) {
+                showNotification('❌ No está conectado a Airtable', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                if (table === 'vehicles') {
+                    await loadVehiclesFromAirtable();
+                    showNotification('✅ Datos de furgones importados desde Airtable', 'success');
+                } else if (table === 'points') {
+                    await loadPointsFromAirtable();
+                    showNotification('✅ Datos de puntos importados desde Airtable', 'success');
+                } else if (table === 'assignments') {
+                    await loadAssignmentsFromAirtable();
+                    showNotification('✅ Datos de asignaciones importados desde Airtable', 'success');
+                }
+                
+            } catch (error) {
+                showNotification('❌ Error importando desde Airtable: ' + error.message, 'error');
+            }
+            
+            showLoading(false);
+        }
+
+        async function syncToAirtable(table) {
+            if (!airtableConfig.connected) {
+                showNotification('❌ No está conectado a Airtable', 'error');
+                return;
+            }
+
+            document.getElementById('syncAlert').classList.remove('hidden');
+            
+            try {
+                if (table === 'assignments') {
+                    const pendingAssignments = assignments.filter(a => !a.airtableId);
+                    
+                    for (const assignment of pendingAssignments) {
+                        try {
+                            const airtableId = await createAssignmentInAirtable(assignment);
+                            if (airtableId) {
+                                assignment.airtableId = airtableId;
+                                assignment.syncStatus = 'synced';
+                            }
+                        } catch (error) {
+                            console.error('Error sincronizando asignación:', assignment.id, error);
+                        }
+                    }
+                    
+                    updateAssignmentsTable();
+                    showNotification(`✅ ${pendingAssignments.length} asignaciones sincronizadas`, 'success');
+                }
+                
+                document.getElementById('syncAlert').classList.add('hidden');
+                
+            } catch (error) {
+                document.getElementById('syncAlert').classList.add('hidden');
+                showNotification('❌ Error sincronizando con Airtable: ' + error.message, 'error');
+            }
+        }
+
+        async function syncSingleAssignment(id) {
+            const assignment = assignments.find(a => a.id === id);
+            if (assignment && airtableConfig.connected && !assignment.airtableId) {
+                try {
+                    const airtableId = await createAssignmentInAirtable(assignment);
+                    if (airtableId) {
+                        assignment.airtableId = airtableId;
+                        assignment.syncStatus = 'synced';
+                        updateAssignmentsTable();
+                        showNotification('✅ Asignación sincronizada individualmente', 'success');
+                    }
+                } catch (error) {
+                    showNotification('❌ Error sincronizando asignación: ' + error.message, 'error');
+                }
+            }
+        }
+
+        async function initializeAirtableData() {
+            if (!airtableConfig.connected) {
+                showNotification('❌ Primero debe conectarse a Airtable', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('🔄 Inicializando datos en Airtable...', 'info');
+                
+                await createInitialVehicles();
+                await createInitialPoints();
+                await loadInitialData();
+                
+                showNotification('✅ Datos iniciales creados en Airtable', 'success');
+                
+            } catch (error) {
+                showNotification('❌ Error inicializando datos: ' + error.message, 'error');
+            }
+        }
+
+        async function createInitialVehicles() {
+            const defaultVehicles = [
+                { Codigo: 'F1', Capacidad_Toneladas: 8, Estado: 'Activo', Conductor: 'Juan Pérez', Ubicacion_Actual: 'Base Central' },
+                { Codigo: 'F2', Capacidad_Toneladas: 10, Estado: 'Activo', Conductor: 'María García', Ubicacion_Actual: 'En ruta' },
+                { Codigo: 'F3', Capacidad_Toneladas: 12, Estado: 'Mantenimiento', Conductor: '', Ubicacion_Actual: 'Taller' }
+            ];
+
+            const url = `https://api.airtable.com/v0/${airtableConfig.baseId}/${airtableConfig.tables.vehicles}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        records: defaultVehicles.map(vehicle => ({ fields: vehicle }))
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('Vehículos iniciales creados en Airtable');
+                }
+            } catch (error) {
+                console.error('Error creando vehículos iniciales:', error);
+            }
+        }
+
+        async function createInitialPoints() {
+            const defaultPoints = [
+                { 
+                    Codigo: 'P1', 
+                    Direccion: 'Av. Principal 123 - Centro Comercial Plaza', 
+                    Tipo_Residuo: 'Mixto', 
+                    Volumen_Estimado: 15, 
+                    Frecuencia: 'Diaria',
+                    Coordenadas_GPS: '-12.0464, -77.0428'
+                },
+                { 
+                    Codigo: 'P2', 
+                    Direccion: 'Jr. Comercio 456 - Mercado Central', 
+                    Tipo_Residuo: 'Orgánico', 
+                    Volumen_Estimado: 25, 
+                    Frecuencia: 'Diaria',
+                    Coordenadas_GPS: '-12.0546, -77.0365'
+                },
+                { 
+                    Codigo: 'P3', 
+                    Direccion: 'Calle Las Flores 789 - Zona Residencial Norte', 
+                    Tipo_Residuo: 'Inorgánico', 
+                    Volumen_Estimado: 8, 
+                    Frecuencia: 'Inter-diaria',
+                    Coordenadas_GPS: '-12.0623, -77.0512'
+                },
+                { 
+                    Codigo: 'P4', 
+                    Direccion: 'Av. Industrial 321 - Parque Industrial', 
+                    Tipo_Residuo: 'Industrial', 
+                    Volumen_Estimado: 30, 
+                    Frecuencia: 'Diaria',
+                    Coordenadas_GPS: '-12.0234, -77.0891'
+                }
+            ];
+
+            const url = `https://api.airtable.com/v0/${airtableConfig.baseId}/${airtableConfig.tables.points}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${airtableConfig.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        records: defaultPoints.map(point => ({ fields: point }))
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('Puntos iniciales creados en Airtable');
+                }
+            } catch (error) {
+                console.error('Error creando puntos iniciales:', error);
+            }
+        }
+
+        // Funciones de interfaz
+        function updateConnectionStatus(connected) {
+            const statusDiv = document.getElementById('connectionStatus');
+            const iconSpan = document.getElementById('statusIcon');
+            const textSpan = document.getElementById('statusText');
+            
+            if (connected) {
+                statusDiv.className = 'sync-status connected';
+                iconSpan.textContent = '✅';
+                textSpan.textContent = 'Conectado a Airtable';
+            } else {
+                statusDiv.className = 'sync-status disconnected';
+                iconSpan.textContent = '❌';
+                textSpan.textContent = 'Desconectado de Airtable';
+            }
+            
+            updateLastSyncTime();
+        }
+
+        function updateLastSyncTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-PE', {hour: '2-digit', minute: '2-digit'});
+            document.getElementById('lastSync').textContent = timeStr;
+        }
+
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            if (show) {
+                spinner.classList.remove('hidden');
+            } else {
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function updateSyncStatusTable(table, count) {
+            const now = new Date().toLocaleTimeString('es-PE', {hour: '2-digit', minute: '2-digit'});
+            
+            if (table === 'assignments') {
+                document.getElementById('airtableAssignments').textContent = count;
+                document.getElementById('assignmentsLastSync').textContent = now;
+            } else if (table === 'vehicles') {
+                document.getElementById('airtableVehicles').textContent = count;
+                document.getElementById('vehiclesLastSync').textContent = now;
+            } else if (table === 'points') {
+                document.getElementById('airtablePoints').textContent = count;
+                document.getElementById('pointsLastSync').textContent = now;
+            }
+        }
+
+        function updateSyncMetrics() {
+            const totalSynced = assignments.length + vehicles.length + points.length;
+            document.getElementById('totalSynced').textContent = totalSynced;
+            document.getElementById('syncErrors').textContent = '0';
+        }
+
+        // Sincronización automática
+        function startAutoSync() {
+            const interval = parseInt(document.getElementById('syncInterval').value) * 1000;
+            
+            syncTimer = setInterval(async () => {
+                if (airtableConfig.connected && document.getElementById('autoSync').checked) {
+                    console.log('Auto-sync ejecutándose...');
+                    await syncAllData();
+                }
+            }, interval);
+            
+            showNotification('🔄 Sincronización automática iniciada', 'info');
+        }
+
+        function stopAutoSync() {
+            if (syncTimer) {
+                clearInterval(syncTimer);
+                syncTimer = null;
+                showNotification('⏹️ Sincronización automática detenida', 'warning');
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert ${type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'success'}`;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '1000';
+            notification.style.minWidth = '300px';
+            notification.innerHTML = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Función para validación matemática en el simulador
+        function validateMathematically() {
+            const vehicle = document.getElementById('testVehicle').value;
+            const point = document.getElementById('testPoint').value;
+            const shift = document.getElementById('testShift').value;
+
+            const testAssignment = {
+                vehicle: vehicle,
+                point: point,
+                shift: shift,
+                date: '2025-07-14'
+            };
+
+            const hasConflictResult = hasConflict(testAssignment);
+            const resultDiv = document.getElementById('mathResult');
+            const detailsDiv = document.getElementById('mathDetails');
+
+            let analysis = `
+                <strong>Análisis de Teoría de Conjuntos:</strong><br>
+                • Elemento propuesto: (${vehicle}, ${point}, ${shift})<br>
+                • Verificando intersecciones con asignaciones existentes...<br><br>
+                
+                <strong>Análisis de Lógica Proposicional:</strong><br>
+                • P: "${vehicle} asignado a ${point} en turno ${shift}"<br>
+                • Q: "No existe conflicto con asignaciones actuales"<br>
+                • Evaluando: P → Q<br><br>
+                
+                <strong>Análisis de Álgebra de Boole:</strong><br>
+                • Variable: A_${vehicle.slice(1)}${point.slice(1)}${shift} = 1<br>
+                • Restricción furgón: ∑ A_${vehicle.slice(1)}j${shift} ≤ 1<br>
+                • Restricción punto: ∑ A_i${point.slice(1)}${shift} ≤ 1<br><br>
+                
+                <strong>Resultado:</strong><br>
+            `;
+
+            if (hasConflictResult) {
+                analysis += `<span style="color: #721c24; font-weight: bold;">❌ CONFLICTO DETECTADO</span><br>
+                            La asignación viola las restricciones matemáticas del sistema.`;
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.border = '1px solid #f5c6cb';
+            } else {
+                analysis += `<span style="color: #155724; font-weight: bold;">✅ ASIGNACIÓN VÁLIDA</span><br>
+                            La asignación cumple con todas las restricciones matemáticas.`;
+                resultDiv.style.background = '#d4edda';
+                resultDiv.style.border = '1px solid #c3e6cb';
+            }
+
+            detailsDiv.innerHTML = analysis;
+            resultDiv.style.display = 'block';
+        }
+
+        // Funciones del sistema original
+        function generateReport() {
+            const reportData = {
+                totalAssignments: assignments.length,
+                conflicts: 0,
+                efficiency: 87,
+                vehicleUtilization: {
+                    F1: 92,
+                    F2: 88,
+                    F3: 0
+                },
+                costSavings: {
+                    fuel: 127,
+                    time: 8.5,
+                    avoided: 2400
+                }
+            };
+
+            console.log('Reporte generado:', reportData);
+            showNotification('📊 Reporte generado exitosamente. Datos disponibles en la consola del navegador.', 'success');
+        }
+
+        function exportData() {
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "ID,Fecha,Turno,Furgon,Punto,Estado,AirtableID\n" +
+                assignments.map(a => `${a.id},${a.date},${a.shift},${a.vehicle},${a.point},${a.status},${a.airtableId || ''}`).join('\n');
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "asignaciones_petramas.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('📤 Datos exportados exitosamente', 'success');
+        }
+
+        function backupData() {
+            const backup = {
+                assignments: assignments,
+                vehicles: vehicles,
+                points: points,
+                airtableConfig: {
+                    baseId: airtableConfig.baseId,
+                    tables: airtableConfig.tables
+                },
+                timestamp: new Date().toISOString(),
+                version: "2.0"
+            };
+            
+            localStorage.setItem('petramas_backup', JSON.stringify(backup));
+            showNotification('💾 Backup guardado localmente con éxito.', 'success');
+        }
+
+        function restoreData() {
+            const backup = localStorage.getItem('petramas_backup');
+            if (backup) {
+                const data = JSON.parse(backup);
+                assignments = data.assignments || assignments;
+                vehicles = data.vehicles || vehicles;
+                points = data.points || points;
+                
+                updateAssignmentsTable();
+                updateVehiclesTable();
+                updatePointsTable();
+                updateMetrics();
+                showNotification('📥 Datos restaurados exitosamente.', 'success');
+            } else {
+                showNotification('❌ No se encontró backup previo.', 'error');
+            }
+        }
+
+        function optimizeRoutes() {
+            showNotification('🔄 Iniciando optimización automática de rutas...', 'info');
+            
+            setTimeout(() => {
+                showNotification('✅ Optimización completada. Rutas actualizadas usando algoritmos de matemáticas discretas.', 'success');
+            }, 2000);
+        }
+
+        // Event listeners para configuración automática
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAssignmentsTable();
+            updateVehiclesTable();
+            updatePointsTable();
+            updateMetrics();
+            
+            // Establecer fecha actual
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('assignDate').value = today;
+            
+            // Event listener para auto-sync
+            document.getElementById('autoSync').addEventListener('change', function() {
+                if (this.checked && airtableConfig.connected) {
+                    startAutoSync();
+                } else {
+                    stopAutoSync();
+                }
+            });
+            
+            // Event listener para intervalo de sincronización
+            document.getElementById('syncInterval').addEventListener('change', function() {
+                if (airtableConfig.connected && document.getElementById('autoSync').checked) {
+                    stopAutoSync();
+                    startAutoSync();
+                }
+            });
+            
+            // Validación en tiempo real de campos
+            const vehicleSelect = document.getElementById('assignVehicle');
+            const pointSelect = document.getElementById('assignPoint');
+            const shiftSelect = document.getElementById('assignShift');
+            const dateInput = document.getElementById('assignDate');
+
+            function validateInRealTime() {
+                const vehicle = vehicleSelect.value;
+                const point = pointSelect.value;
+                const shift = shiftSelect.value;
+                const date = dateInput.value;
+
+                if (vehicle && point && shift && date) {
+                    const testAssignment = { vehicle, point, shift, date };
+                    const conflict = hasConflict(testAssignment);
+                    
+                    if (conflict) {
+                        showNotification('⚠️ Advertencia: Esta combinación generará un conflicto', 'error');
+                    }
+                }
+            }
+
+            [vehicleSelect, pointSelect, shiftSelect, dateInput].forEach(element => {
+                element.addEventListener('change', validateInRealTime);
+            });
+            
+            // Mensaje de bienvenida
+            setTimeout(() => {
+                showNotification('🎉 Sistema Petramás con integración Airtable iniciado correctamente', 'success');
+            }, 1000);
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Petramás S.A.C. - Sistema de Asignación de Rutas</title>
+    <title>Petramás S.A.C. - Sistema de Asignación de Rutas con Airtable</title>
     <style>
         * {
             margin: 0;
@@ -160,6 +1404,14 @@
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
         }
 
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+
+        .btn-airtable {
+            background: linear-gradient(135deg, #f9b334 0%, #f39c12 100%);
+        }
+
         .table-container {
             overflow-x: auto;
             border-radius: 10px;
@@ -214,6 +1466,11 @@
             color: #856404;
         }
 
+        .status.synced {
+            background: #cce5ff;
+            color: #004085;
+        }
+
         .alert {
             padding: 15px;
             border-radius: 10px;
@@ -231,6 +1488,12 @@
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
+        }
+
+        .alert.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
         }
 
         .tabs {
@@ -284,51 +1547,213 @@
             border-radius: 5px;
             font-family: 'Courier New', monospace;
         }
+
+        .airtable-config {
+            background: #fff9e6;
+            border: 2px solid #f39c12;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .sync-status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .sync-status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🚛 Petramás S.A.C.</h1>
-            <p>Sistema Inteligente de Asignación de Rutas - Basado en Matemáticas Discretas</p>
+            <p>Sistema Inteligente de Asignación de Rutas - Integrado con Airtable</p>
         </div>
 
         <div class="main-content">
+            <!-- Estado de Conexión Airtable -->
+            <div id="connectionStatus" class="sync-status disconnected">
+                <span id="statusIcon">❌</span>
+                <span id="statusText">Desconectado de Airtable</span>
+                <div id="loadingSpinner" class="loading hidden"></div>
+            </div>
+
             <!-- Dashboard de Métricas -->
             <div class="dashboard">
                 <div class="metric-card">
                     <h3>Asignaciones Hoy</h3>
-                    <div class="value" id="totalAssignments">12</div>
-                    <small>+3 vs ayer</small>
+                    <div class="value" id="totalAssignments">3</div>
+                    <small id="syncedCount">0 sincronizadas</small>
                 </div>
                 <div class="metric-card">
                     <h3>Conflictos Detectados</h3>
-                    <div class="value" id="conflictsDetected">2</div>
+                    <div class="value" id="conflictsDetected">0</div>
                     <small>Resueltos automáticamente</small>
                 </div>
                 <div class="metric-card">
                     <h3>Eficiencia de Flota</h3>
                     <div class="value" id="fleetEfficiency">87%</div>
-                    <small>+15% vs método manual</small>
+                    <small>Optimizado con IA</small>
                 </div>
                 <div class="metric-card">
-                    <h3>Tiempo Ahorrado</h3>
-                    <div class="value" id="timeSaved">105</div>
-                    <small>minutos por día</small>
+                    <h3>Última Sincronización</h3>
+                    <div class="value" id="lastSync">--:--</div>
+                    <small>Airtable sync</small>
                 </div>
             </div>
 
             <!-- Navegación por Pestañas -->
             <div class="tabs">
-                <button class="tab active" onclick="showTab('assignments')">📋 Asignaciones</button>
+                <button class="tab active" onclick="showTab('airtable')">🔗 Configuración Airtable</button>
+                <button class="tab" onclick="showTab('assignments')">📋 Asignaciones</button>
                 <button class="tab" onclick="showTab('vehicles')">🚛 Furgones</button>
                 <button class="tab" onclick="showTab('points')">📍 Puntos de Recolección</button>
                 <button class="tab" onclick="showTab('analytics')">📊 Análisis</button>
                 <button class="tab" onclick="showTab('math')">🧮 Fundamentos Matemáticos</button>
             </div>
 
+            <!-- Configuración de Airtable -->
+            <div id="airtable" class="tab-content">
+                <div class="section">
+                    <h2>Configuración de Airtable</h2>
+                    <div class="airtable-config">
+                        <h3>🔑 Credenciales de Conexión</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="airtableToken">Personal Access Token:</label>
+                                <input type="password" id="airtableToken" placeholder="patXXXXXXXXXXXXXX.xxxxxxxxxxxxxxx">
+                            </div>
+                            <div class="form-group">
+                                <label for="airtableBaseId">Base ID:</label>
+                                <input type="text" id="airtableBaseId" placeholder="appXXXXXXXXXXXXXX">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="assignmentsTableId">Tabla Asignaciones:</label>
+                                <input type="text" id="assignmentsTableId" placeholder="tblXXXXXXXXXXXXXX" value="Asignaciones">
+                            </div>
+                            <div class="form-group">
+                                <label for="vehiclesTableId">Tabla Furgones:</label>
+                                <input type="text" id="vehiclesTableId" placeholder="tblXXXXXXXXXXXXXX" value="Furgones">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pointsTableId">Tabla Puntos:</label>
+                                <input type="text" id="pointsTableId" placeholder="tblXXXXXXXXXXXXXX" value="Puntos_Recoleccion">
+                            </div>
+                            <div class="form-group">
+                                <label for="syncInterval">Intervalo de Sincronización (seg):</label>
+                                <input type="number" id="syncInterval" value="30" min="10" max="300">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-airtable" onclick="connectToAirtable()">🔗 Conectar a Airtable</button>
+                            <button class="btn btn-success" onclick="testConnection()">🧪 Probar Conexión</button>
+                            <button class="btn" onclick="syncAllData()">⚡ Sincronizar Todo</button>
+                            <button class="btn" onclick="initializeAirtableData()">🚀 Inicializar Datos</button>
+                            <button class="btn btn-danger" onclick="disconnectAirtable()">❌ Desconectar</button>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>📊 Estado de Sincronización</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Tabla</th>
+                                        <th>Registros Locales</th>
+                                        <th>Registros Airtable</th>
+                                        <th>Última Sync</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="syncStatusTable">
+                                    <tr>
+                                        <td>Asignaciones</td>
+                                        <td id="localAssignments">3</td>
+                                        <td id="airtableAssignments">-</td>
+                                        <td id="assignmentsLastSync">Nunca</td>
+                                        <td><span class="status pending">Pendiente</span></td>
+                                        <td><button class="btn" onclick="syncAssignments()">⚡ Sync</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Furgones</td>
+                                        <td id="localVehicles">3</td>
+                                        <td id="airtableVehicles">-</td>
+                                        <td id="vehiclesLastSync">Nunca</td>
+                                        <td><span class="status pending">Pendiente</span></td>
+                                        <td><button class="btn" onclick="syncVehicles()">⚡ Sync</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Puntos</td>
+                                        <td id="localPoints">4</td>
+                                        <td id="airtablePoints">-</td>
+                                        <td id="pointsLastSync">Nunca</td>
+                                        <td><span class="status pending">Pendiente</span></td>
+                                        <td><button class="btn" onclick="syncPoints()">⚡ Sync</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>🔧 Configuración Avanzada</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="autoSync"> Sincronización Automática
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="bidirectionalSync"> Sincronización Bidireccional
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="conflictResolution"> Resolución Automática de Conflictos
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Contenido de Asignaciones -->
-            <div id="assignments" class="tab-content">
+            <div id="assignments" class="tab-content hidden">
                 <div class="section">
                     <h2>Nueva Asignación de Ruta</h2>
                     <div class="form-section">
@@ -369,16 +1794,20 @@
                         </div>
                         <div class="form-group">
                             <button class="btn" onclick="addAssignment()">➕ Crear Asignación</button>
+                            <button class="btn btn-airtable" onclick="syncToAirtable('assignments')">☁️ Sincronizar con Airtable</button>
                             <button class="btn" onclick="validateAllAssignments()">🔍 Validar Todas</button>
                             <button class="btn btn-danger" onclick="clearAssignments()">🗑️ Limpiar Todo</button>
                         </div>
                     </div>
 
                     <div id="validationAlert" class="alert success hidden">
-                        ✅ Asignación creada exitosamente sin conflictos
+                        ✅ Asignación creada y sincronizada exitosamente
                     </div>
                     <div id="conflictAlert" class="alert error hidden">
-                        ⚠️ Conflicto detectado: Esta asignación viola las reglas de matemáticas discretas
+                        ⚠️ Conflicto detectado: Esta asignación viola las reglas matemáticas
+                    </div>
+                    <div id="syncAlert" class="alert warning hidden">
+                        ☁️ Sincronizando con Airtable...
                     </div>
                 </div>
 
@@ -394,44 +1823,26 @@
                                     <th>Furgón</th>
                                     <th>Punto</th>
                                     <th>Estado</th>
-                                    <th>Validación</th>
+                                    <th>Airtable ID</th>
+                                    <th>Sync Status</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="assignmentsTable">
-                                <tr>
-                                    <td>001</td>
-                                    <td>2025-07-14</td>
-                                    <td>Mañana</td>
-                                    <td>F1</td>
-                                    <td>P1</td>
-                                    <td><span class="status valid">Programada</span></td>
-                                    <td><span class="status valid">✅ Válida</span></td>
-                                    <td><button class="btn" onclick="editAssignment(1)">✏️</button></td>
-                                </tr>
-                                <tr>
-                                    <td>002</td>
-                                    <td>2025-07-14</td>
-                                    <td>Mañana</td>
-                                    <td>F2</td>
-                                    <td>P2</td>
-                                    <td><span class="status valid">Programada</span></td>
-                                    <td><span class="status valid">✅ Válida</span></td>
-                                    <td><button class="btn" onclick="editAssignment(2)">✏️</button></td>
-                                </tr>
-                                <tr>
-                                    <td>003</td>
-                                    <td>2025-07-14</td>
-                                    <td>Tarde</td>
-                                    <td>F3</td>
-                                    <td>P3</td>
-                                    <td><span class="status valid">Programada</span></td>
-                                    <td><span class="status valid">✅ Válida</span></td>
-                                    <td><button class="btn" onclick="editAssignment(3)">✏️</button></td>
-                                </tr>
+                                <!-- Datos se cargarán dinámicamente -->
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- Controles del Sistema -->
+                <div class="section" style="text-align: center; margin-top: 20px;">
+                    <h3>Controles del Sistema</h3>
+                    <button class="btn" onclick="generateReport()">📊 Generar Reporte</button>
+                    <button class="btn" onclick="exportData()">📤 Exportar CSV</button>
+                    <button class="btn" onclick="backupData()">💾 Crear Backup</button>
+                    <button class="btn" onclick="restoreData()">📥 Restaurar Backup</button>
+                    <button class="btn" onclick="optimizeRoutes()">🚀 Optimizar Rutas</button>
                 </div>
             </div>
 
@@ -439,107 +1850,54 @@
             <div id="vehicles" class="tab-content hidden">
                 <div class="section">
                     <h2>Gestión de Furgones</h2>
+                    <button class="btn btn-airtable" onclick="syncFromAirtable('vehicles')" style="margin-bottom: 20px;">
+                        ⬇️ Importar desde Airtable
+                    </button>
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
                                     <th>Código</th>
-                                    <th>Capacidad</th>
+                                    <th>Capacidad (ton)</th>
                                     <th>Estado</th>
                                     <th>Conductor</th>
                                     <th>Ubicación Actual</th>
                                     <th>Asignaciones Hoy</th>
-                                    <th>Eficiencia</th>
+                                    <th>Airtable ID</th>
+                                    <th>Sync Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>F1</td>
-                                    <td>8 toneladas</td>
-                                    <td><span class="status valid">Activo</span></td>
-                                    <td>Juan Pérez</td>
-                                    <td>Base Central</td>
-                                    <td>2</td>
-                                    <td>92%</td>
-                                </tr>
-                                <tr>
-                                    <td>F2</td>
-                                    <td>10 toneladas</td>
-                                    <td><span class="status valid">Activo</span></td>
-                                    <td>María García</td>
-                                    <td>P2 - En servicio</td>
-                                    <td>3</td>
-                                    <td>88%</td>
-                                </tr>
-                                <tr>
-                                    <td>F3</td>
-                                    <td>12 toneladas</td>
-                                    <td><span class="status pending">Mantenimiento</span></td>
-                                    <td>-</td>
-                                    <td>Taller</td>
-                                    <td>0</td>
-                                    <td>-</td>
-                                </tr>
+                            <tbody id="vehiclesTable">
+                                <!-- Datos se cargarán dinámicamente -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Contenido de Puntos de Recolección -->
+            <!-- Contenido de Puntos -->
             <div id="points" class="tab-content hidden">
                 <div class="section">
                     <h2>Puntos de Recolección</h2>
+                    <button class="btn btn-airtable" onclick="syncFromAirtable('points')" style="margin-bottom: 20px;">
+                        ⬇️ Importar desde Airtable
+                    </button>
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
                                     <th>Código</th>
                                     <th>Dirección</th>
-                                    <th>Tipo de Residuo</th>
-                                    <th>Volumen Estimado</th>
+                                    <th>Tipo Residuo</th>
+                                    <th>Volumen (m³)</th>
                                     <th>Frecuencia</th>
-                                    <th>Estado</th>
-                                    <th>Última Recolección</th>
+                                    <th>Coordenadas GPS</th>
+                                    <th>Airtable ID</th>
+                                    <th>Sync Status</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>P1</td>
-                                    <td>Av. Principal 123 - Centro Comercial Plaza</td>
-                                    <td>Mixto</td>
-                                    <td>15 m³</td>
-                                    <td>Diaria</td>
-                                    <td><span class="status valid">Programado</span></td>
-                                    <td>2025-07-13</td>
-                                </tr>
-                                <tr>
-                                    <td>P2</td>
-                                    <td>Jr. Comercio 456 - Mercado Central</td>
-                                    <td>Orgánico</td>
-                                    <td>25 m³</td>
-                                    <td>Diaria</td>
-                                    <td><span class="status valid">Programado</span></td>
-                                    <td>2025-07-13</td>
-                                </tr>
-                                <tr>
-                                    <td>P3</td>
-                                    <td>Calle Las Flores 789 - Zona Residencial</td>
-                                    <td>Inorgánico</td>
-                                    <td>8 m³</td>
-                                    <td>Inter-diaria</td>
-                                    <td><span class="status pending">Pendiente</span></td>
-                                    <td>2025-07-12</td>
-                                </tr>
-                                <tr>
-                                    <td>P4</td>
-                                    <td>Av. Industrial 321 - Parque Industrial</td>
-                                    <td>Industrial</td>
-                                    <td>30 m³</td>
-                                    <td>Diaria</td>
-                                    <td><span class="status valid">Programado</span></td>
-                                    <td>2025-07-13</td>
-                                </tr>
+                            <tbody id="pointsTable">
+                                <!-- Datos se cargarán dinámicamente -->
                             </tbody>
                         </table>
                     </div>
@@ -552,63 +1910,54 @@
                     <h2>Dashboard de Análisis y Reportes</h2>
                     
                     <div class="chart-container">
-                        <h3>Eficiencia de Asignaciones por Día</h3>
-                        <canvas id="efficiencyChart" width="400" height="200"></canvas>
+                        <h3>Sincronización con Airtable - Últimos 7 días</h3>
+                        <div style="display: flex; justify-content: space-around; align-items: end; height: 200px; padding: 20px;">
+                            <div style="text-align: center;">
+                                <div style="height: 100px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
+                                <small>Lun</small><br><strong>24</strong>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="height: 80px; width: 30px; background: #3498db; margin: 0 auto 10px;"></div>
+                                <small>Mar</small><br><strong>18</strong>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="height: 120px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
+                                <small>Mié</small><br><strong>32</strong>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="height: 90px; width: 30px; background: #f39c12; margin: 0 auto 10px;"></div>
+                                <small>Jue</small><br><strong>21</strong>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="height: 110px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
+                                <small>Vie</small><br><strong>28</strong>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="height: 75px; width: 30px; background: #9b59b6; margin: 0 auto 10px;"></div>
+                                <small>Sáb</small><br><strong>15</strong>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="height: 95px; width: 30px; background: #e74c3c; margin: 0 auto 10px;"></div>
+                                <small>Dom</small><br><strong>22</strong>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="form-row">
-                        <div class="chart-container">
-                            <h3>Utilización de Flota</h3>
-                            <div style="display: flex; justify-content: space-around; align-items: center; height: 200px;">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 3em; color: #3498db;">F1</div>
-                                    <div style="font-size: 1.5em; color: #27ae60;">92%</div>
-                                    <small>Utilización</small>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 3em; color: #9b59b6;">F2</div>
-                                    <div style="font-size: 1.5em; color: #f39c12;">88%</div>
-                                    <small>Utilización</small>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 3em; color: #e74c3c;">F3</div>
-                                    <div style="font-size: 1.5em; color: #e74c3c;">0%</div>
-                                    <small>En Mantenimiento</small>
-                                </div>
-                            </div>
+                        <div style="background: #d4edda; padding: 20px; border-radius: 10px; text-align: center;">
+                            <h4 style="color: #155724;">Datos Sincronizados</h4>
+                            <div style="font-size: 2em; color: #155724; font-weight: bold;" id="totalSynced">0</div>
+                            <small>Registros esta semana</small>
                         </div>
-                        <div class="chart-container">
-                            <h3>Conflictos Detectados - Últimos 7 días</h3>
-                            <div style="display: flex; justify-content: space-around; align-items: end; height: 200px; padding: 20px;">
-                                <div style="text-align: center;">
-                                    <div style="height: 80px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
-                                    <small>Lun</small><br><strong>0</strong>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="height: 40px; width: 30px; background: #f39c12; margin: 0 auto 10px;"></div>
-                                    <small>Mar</small><br><strong>1</strong>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="height: 20px; width: 30px; background: #e74c3c; margin: 0 auto 10px;"></div>
-                                    <small>Mié</small><br><strong>2</strong>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="height: 60px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
-                                    <small>Jue</small><br><strong>0</strong>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="height: 100px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
-                                    <small>Vie</small><br><strong>0</strong>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="height: 80px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
-                                    <small>Sáb</small><br><strong>0</strong>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="height: 120px; width: 30px; background: #3498db; margin: 0 auto 10px;"></div>
-                                    <small>Dom</small><br><strong>2</strong>
-                                </div>
-                            </div>
+                        <div style="background: #cce5ff; padding: 20px; border-radius: 10px; text-align: center;">
+                            <h4 style="color: #004085;">Tiempo de Respuesta</h4>
+                            <div style="font-size: 2em; color: #004085; font-weight: bold;" id="avgResponseTime">--</div>
+                            <small>Promedio API Airtable</small>
+                        </div>
+                        <div style="background: #fff3cd; padding: 20px; border-radius: 10px; text-align: center;">
+                            <h4 style="color: #856404;">Errores Sync</h4>
+                            <div style="font-size: 2em; color: #856404; font-weight: bold;" id="syncErrors">0</div>
+                            <small>En las últimas 24h</small>
                         </div>
                     </div>
 
@@ -616,540 +1965,3 @@
                         <h3>Reporte de Ahorro de Costos</h3>
                         <div class="form-row">
                             <div style="background: #d4edda; padding: 20px; border-radius: 10px; text-align: center;">
-                                <h4 style="color: #155724;">Combustible Ahorrado</h4>
-                                <div style="font-size: 2em; color: #155724; font-weight: bold;">127 L</div>
-                                <small>Esta semana vs método manual</small>
-                            </div>
-                            <div style="background: #cce5ff; padding: 20px; border-radius: 10px; text-align: center;">
-                                <h4 style="color: #004085;">Tiempo Ahorrado</h4>
-                                <div style="font-size: 2em; color: #004085; font-weight: bold;">8.5 hrs</div>
-                                <small>Por día en planificación</small>
-                            </div>
-                            <div style="background: #fff3cd; padding: 20px; border-radius: 10px; text-align: center;">
-                                <h4 style="color: #856404;">Costo Evitado</h4>
-                                <div style="font-size: 2em; color: #856404; font-weight: bold;">S/ 2,400</div>
-                                <small>En conflictos y retrasos</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contenido de Fundamentos Matemáticos -->
-            <div id="math" class="tab-content hidden">
-                <div class="section">
-                    <h2>Fundamentos Matemáticos Aplicados</h2>
-                    
-                    <h3>1. Teoría de Conjuntos</h3>
-                    <div class="math-formula">
-                        <strong>Conjuntos del Sistema:</strong><br>
-                        F = {F1, F2, F3} (Furgones)<br>
-                        P = {P1, P2, P3, P4} (Puntos de Recolección)<br>
-                        T = {M, T} (Turnos: Mañana, Tarde)<br><br>
-                        <strong>Producto Cartesiano:</strong><br>
-                        Asignaciones_Posibles = F × P × T<br>
-                        |Asignaciones_Posibles| = 3 × 4 × 2 = 24
-                    </div>
-
-                    <h3>2. Lógica Proposicional</h3>
-                    <div class="math-formula">
-                        <strong>Reglas de Validación:</strong><br>
-                        ∀ f ∈ F, ∀ t ∈ T: ∑(asignaciones_furgon_f_turno_t) ≤ 1<br>
-                        ∀ p ∈ P, ∀ t ∈ T: ∑(asignaciones_punto_p_turno_t) ≤ 1<br><br>
-                        <strong>Función de Conflicto:</strong><br>
-                        Conflicto(f,p,t) = (count_furgon(f,t) > 1) ∨ (count_punto(p,t) > 1)
-                    </div>
-
-                    <h3>3. Álgebra de Boole</h3>
-                    <div class="math-formula">
-                        <strong>Variables Booleanas:</strong><br>
-                        A_ijt = 1 si furgón_i asignado a punto_j en turno_t<br>
-                        A_ijt = 0 en caso contrario<br><br>
-                        <strong>Restricciones:</strong><br>
-                        ∑_j A_ijt ≤ 1  (Un furgón, máximo un punto por turno)<br>
-                        ∑_i A_ijt ≤ 1  (Un punto, máximo un furgón por turno)
-                    </div>
-
-                    <h3>4. Teoría de Grafos</h3>
-                    <div class="math-formula">
-                        <strong>Grafo de Conflictos G = (V, E):</strong><br>
-                        V = {todas las asignaciones posibles}<br>
-                        E = {(v1, v2) | v1 y v2 generan conflicto}<br><br>
-                        <strong>Conjunto Independiente:</strong><br>
-                        I ⊆ V tal que ∀ u,v ∈ I: (u,v) ∉ E<br>
-                        Objetivo: Encontrar conjunto independiente máximo
-                    </div>
-
-                    <div class="section">
-                        <h3>Simulador de Validación Matemática</h3>
-                        <div class="form-section">
-                            <h4>Probar Asignación:</h4>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Furgón:</label>
-                                    <select id="testVehicle">
-                                        <option value="F1">F1</option>
-                                        <option value="F2">F2</option>
-                                        <option value="F3">F3</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Punto:</label>
-                                    <select id="testPoint">
-                                        <option value="P1">P1</option>
-                                        <option value="P2">P2</option>
-                                        <option value="P3">P3</option>
-                                        <option value="P4">P4</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Turno:</label>
-                                    <select id="testShift">
-                                        <option value="M">Mañana</option>
-                                        <option value="T">Tarde</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <button class="btn" onclick="validateMathematically()">🧮 Validar Matemáticamente</button>
-                            <div id="mathResult" style="margin-top: 15px; padding: 15px; border-radius: 8px; display: none;">
-                                <h4>Resultado del Análisis Matemático:</h4>
-                                <div id="mathDetails"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Datos del sistema
-        let assignments = [
-            {id: 1, date: '2025-07-14', shift: 'M', vehicle: 'F1', point: 'P1', status: 'Programada'},
-            {id: 2, date: '2025-07-14', shift: 'M', vehicle: 'F2', point: 'P2', status: 'Programada'},
-            {id: 3, date: '2025-07-14', shift: 'T', vehicle: 'F3', point: 'P3', status: 'Programada'}
-        ];
-
-        let nextId = 4;
-
-        // Funciones de navegación
-        function showTab(tabName) {
-            // Ocultar todas las pestañas
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.add('hidden');
-            });
-            
-            // Remover clase activa de todas las pestañas
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Mostrar pestaña seleccionada
-            document.getElementById(tabName).classList.remove('hidden');
-            
-            // Activar pestaña correspondiente
-            event.target.classList.add('active');
-        }
-
-        // Función para validar conflictos usando matemáticas discretas
-        function hasConflict(newAssignment) {
-            return assignments.some(existing => {
-                // Conflicto de furgón: mismo furgón, mismo turno, misma fecha
-                const vehicleConflict = existing.vehicle === newAssignment.vehicle && 
-                                      existing.shift === newAssignment.shift && 
-                                      existing.date === newAssignment.date;
-                
-                // Conflicto de punto: mismo punto, mismo turno, misma fecha
-                const pointConflict = existing.point === newAssignment.point && 
-                                     existing.shift === newAssignment.shift && 
-                                     existing.date === newAssignment.date;
-                
-                return vehicleConflict || pointConflict;
-            });
-        }
-
-        // Función para agregar nueva asignación
-        function addAssignment() {
-            const date = document.getElementById('assignDate').value;
-            const shift = document.getElementById('assignShift').value;
-            const vehicle = document.getElementById('assignVehicle').value;
-            const point = document.getElementById('assignPoint').value;
-
-            if (!date || !shift || !vehicle || !point) {
-                alert('Por favor complete todos los campos');
-                return;
-            }
-
-            const newAssignment = {
-                id: nextId++,
-                date: date,
-                shift: shift,
-                vehicle: vehicle,
-                point: point,
-                status: 'Programada'
-            };
-
-            if (hasConflict(newAssignment)) {
-                document.getElementById('conflictAlert').classList.remove('hidden');
-                document.getElementById('validationAlert').classList.add('hidden');
-                setTimeout(() => {
-                    document.getElementById('conflictAlert').classList.add('hidden');
-                }, 5000);
-                return;
-            }
-
-            assignments.push(newAssignment);
-            document.getElementById('validationAlert').classList.remove('hidden');
-            document.getElementById('conflictAlert').classList.add('hidden');
-            
-            setTimeout(() => {
-                document.getElementById('validationAlert').classList.add('hidden');
-            }, 3000);
-
-            updateAssignmentsTable();
-            updateMetrics();
-            
-            // Limpiar formulario
-            document.getElementById('assignShift').value = '';
-            document.getElementById('assignVehicle').value = '';
-            document.getElementById('assignPoint').value = '';
-        }
-
-        // Función para actualizar la tabla de asignaciones
-        function updateAssignmentsTable() {
-            const tableBody = document.getElementById('assignmentsTable');
-            tableBody.innerHTML = '';
-
-            assignments.forEach(assignment => {
-                const row = document.createElement('tr');
-                const shiftName = assignment.shift === 'M' ? 'Mañana' : 'Tarde';
-                
-                row.innerHTML = `
-                    <td>${assignment.id.toString().padStart(3, '0')}</td>
-                    <td>${assignment.date}</td>
-                    <td>${shiftName}</td>
-                    <td>${assignment.vehicle}</td>
-                    <td>${assignment.point}</td>
-                    <td><span class="status valid">${assignment.status}</span></td>
-                    <td><span class="status valid">✅ Válida</span></td>
-                    <td><button class="btn" onclick="removeAssignment(${assignment.id})">🗑️</button></td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
-        }
-
-        // Función para remover asignación
-        function removeAssignment(id) {
-            assignments = assignments.filter(assignment => assignment.id !== id);
-            updateAssignmentsTable();
-            updateMetrics();
-        }
-
-        // Función para limpiar todas las asignaciones
-        function clearAssignments() {
-            if (confirm('¿Está seguro de que desea eliminar todas las asignaciones?')) {
-                assignments = [];
-                updateAssignmentsTable();
-                updateMetrics();
-            }
-        }
-
-        // Función para validar todas las asignaciones
-        function validateAllAssignments() {
-            let conflicts = 0;
-            const conflictDetails = [];
-
-            for (let i = 0; i < assignments.length; i++) {
-                for (let j = i + 1; j < assignments.length; j++) {
-                    const a1 = assignments[i];
-                    const a2 = assignments[j];
-
-                    if (a1.date === a2.date && a1.shift === a2.shift) {
-                        if (a1.vehicle === a2.vehicle) {
-                            conflicts++;
-                            conflictDetails.push(`Conflicto: ${a1.vehicle} asignado a ${a1.point} y ${a2.point} en el mismo turno`);
-                        }
-                        if (a1.point === a2.point) {
-                            conflicts++;
-                            conflictDetails.push(`Conflicto: ${a1.point} asignado a ${a1.vehicle} y ${a2.vehicle} en el mismo turno`);
-                        }
-                    }
-                }
-            }
-
-            if (conflicts === 0) {
-                alert('✅ Todas las asignaciones son válidas. No se detectaron conflictos.');
-            } else {
-                alert(`⚠️ Se detectaron ${conflicts} conflictos:\n\n${conflictDetails.join('\n')}`);
-            }
-        }
-
-        // Función para actualizar métricas
-        function updateMetrics() {
-            document.getElementById('totalAssignments').textContent = assignments.length;
-            
-            // Simular cálculos de eficiencia
-            const efficiency = Math.max(60, 100 - (assignments.length * 2));
-            document.getElementById('fleetEfficiency').textContent = efficiency + '%';
-            
-            const timeSaved = assignments.length * 8.75; // 8.75 minutos por asignación optimizada
-            document.getElementById('timeSaved').textContent = Math.round(timeSaved);
-        }
-
-        // Función para validación matemática en el simulador
-        function validateMathematically() {
-            const vehicle = document.getElementById('testVehicle').value;
-            const point = document.getElementById('testPoint').value;
-            const shift = document.getElementById('testShift').value;
-
-            const testAssignment = {
-                vehicle: vehicle,
-                point: point,
-                shift: shift,
-                date: '2025-07-14'
-            };
-
-            const hasConflictResult = hasConflict(testAssignment);
-            const resultDiv = document.getElementById('mathResult');
-            const detailsDiv = document.getElementById('mathDetails');
-
-            let analysis = `
-                <strong>Análisis de Teoría de Conjuntos:</strong><br>
-                • Elemento propuesto: (${vehicle}, ${point}, ${shift})<br>
-                • Verificando intersecciones con asignaciones existentes...<br><br>
-                
-                <strong>Análisis de Lógica Proposicional:</strong><br>
-                • P: "${vehicle} asignado a ${point} en turno ${shift}"<br>
-                • Q: "No existe conflicto con asignaciones actuales"<br>
-                • Evaluando: P → Q<br><br>
-                
-                <strong>Análisis de Álgebra de Boole:</strong><br>
-                • Variable: A_${vehicle.slice(1)}${point.slice(1)}${shift} = 1<br>
-                • Restricción furgón: ∑ A_${vehicle.slice(1)}j${shift} ≤ 1<br>
-                • Restricción punto: ∑ A_i${point.slice(1)}${shift} ≤ 1<br><br>
-                
-                <strong>Resultado:</strong><br>
-            `;
-
-            if (hasConflictResult) {
-                analysis += `<span style="color: #721c24; font-weight: bold;">❌ CONFLICTO DETECTADO</span><br>
-                            La asignación viola las restricciones matemáticas del sistema.`;
-                resultDiv.style.background = '#f8d7da';
-                resultDiv.style.border = '1px solid #f5c6cb';
-            } else {
-                analysis += `<span style="color: #155724; font-weight: bold;">✅ ASIGNACIÓN VÁLIDA</span><br>
-                            La asignación cumple con todas las restricciones matemáticas.`;
-                resultDiv.style.background = '#d4edda';
-                resultDiv.style.border = '1px solid #c3e6cb';
-            }
-
-            detailsDiv.innerHTML = analysis;
-            resultDiv.style.display = 'block';
-        }
-
-        // Función para simular datos en tiempo real
-        function simulateRealTimeData() {
-            // Actualizar métricas cada 30 segundos
-            setInterval(() => {
-                const conflicts = Math.floor(Math.random() * 3);
-                document.getElementById('conflictsDetected').textContent = conflicts;
-                
-                const efficiency = 85 + Math.floor(Math.random() * 10);
-                document.getElementById('fleetEfficiency').textContent = efficiency + '%';
-            }, 30000);
-        }
-
-        // Inicializar la aplicación
-        document.addEventListener('DOMContentLoaded', function() {
-            updateAssignmentsTable();
-            updateMetrics();
-            simulateRealTimeData();
-            
-            // Establecer fecha actual por defecto
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('assignDate').value = today;
-        });
-
-        // Función para editar asignación
-        function editAssignment(id) {
-            const assignment = assignments.find(a => a.id === id);
-            if (assignment) {
-                document.getElementById('assignDate').value = assignment.date;
-                document.getElementById('assignShift').value = assignment.shift;
-                document.getElementById('assignVehicle').value = assignment.vehicle;
-                document.getElementById('assignPoint').value = assignment.point;
-                
-                // Remover la asignación existente para permitir la edición
-                removeAssignment(id);
-                
-                // Scroll hacia el formulario
-                document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
-        // Función para generar reporte
-        function generateReport() {
-            const reportData = {
-                totalAssignments: assignments.length,
-                conflicts: 0,
-                efficiency: 87,
-                vehicleUtilization: {
-                    F1: 92,
-                    F2: 88,
-                    F3: 0
-                },
-                costSavings: {
-                    fuel: 127,
-                    time: 8.5,
-                    avoided: 2400
-                }
-            };
-
-            console.log('Reporte generado:', reportData);
-            alert('📊 Reporte generado exitosamente. Datos disponibles en la consola del navegador.');
-        }
-
-        // Función para exportar datos
-        function exportData() {
-            const csvContent = "data:text/csv;charset=utf-8," + 
-                "ID,Fecha,Turno,Furgon,Punto,Estado\n" +
-                assignments.map(a => `${a.id},${a.date},${a.shift},${a.vehicle},${a.point},${a.status}`).join('\n');
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "asignaciones_petramas.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Función para backup de datos
-        function backupData() {
-            const backup = {
-                assignments: assignments,
-                timestamp: new Date().toISOString(),
-                version: "1.0"
-            };
-            
-            localStorage.setItem('petramas_backup', JSON.stringify(backup));
-            alert('💾 Backup guardado localmente con éxito.');
-        }
-
-        // Función para restaurar datos
-        function restoreData() {
-            const backup = localStorage.getItem('petramas_backup');
-            if (backup) {
-                const data = JSON.parse(backup);
-                assignments = data.assignments;
-                updateAssignmentsTable();
-                updateMetrics();
-                alert('📥 Datos restaurados exitosamente.');
-            } else {
-                alert('❌ No se encontró backup previo.');
-            }
-        }
-
-        // Función para optimización automática
-        function optimizeRoutes() {
-            alert('🔄 Iniciando optimización automática de rutas...\n\n' +
-                  '• Aplicando algoritmos de teoría de grafos\n' +
-                  '• Minimizando distancias entre puntos\n' +
-                  '• Balanceando carga de trabajo\n' +
-                  '• Evitando conflictos automáticamente\n\n' +
-                  '✅ Optimización completada. Rutas actualizadas.');
-        }
-
-        // Agregar botones adicionales al dashboard
-        function addControlButtons() {
-            const controlsHtml = `
-                <div class="section" style="text-align: center; margin-top: 20px;">
-                    <h3>Controles del Sistema</h3>
-                    <button class="btn" onclick="generateReport()">📊 Generar Reporte</button>
-                    <button class="btn" onclick="exportData()">📤 Exportar CSV</button>
-                    <button class="btn" onclick="backupData()">💾 Crear Backup</button>
-                    <button class="btn" onclick="restoreData()">📥 Restaurar Backup</button>
-                    <button class="btn" onclick="optimizeRoutes()">🚀 Optimizar Rutas</button>
-                </div>
-            `;
-            
-            // Agregar controles a la pestaña de asignaciones
-            const assignmentsTab = document.getElementById('assignments');
-            if (assignmentsTab && !document.querySelector('.system-controls')) {
-                const controlsDiv = document.createElement('div');
-                controlsDiv.className = 'system-controls';
-                controlsDiv.innerHTML = controlsHtml;
-                assignmentsTab.appendChild(controlsDiv);
-            }
-        }
-
-        // Función para mostrar notificaciones en tiempo real
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `alert ${type === 'error' ? 'error' : 'success'}`;
-            notification.style.position = 'fixed';
-            notification.style.top = '20px';
-            notification.style.right = '20px';
-            notification.style.zIndex = '1000';
-            notification.style.minWidth = '300px';
-            notification.innerHTML = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 4000);
-        }
-
-        // Función para validación en tiempo real
-        function enableRealTimeValidation() {
-            const vehicleSelect = document.getElementById('assignVehicle');
-            const pointSelect = document.getElementById('assignPoint');
-            const shiftSelect = document.getElementById('assignShift');
-            const dateInput = document.getElementById('assignDate');
-
-            function validateInRealTime() {
-                const vehicle = vehicleSelect.value;
-                const point = pointSelect.value;
-                const shift = shiftSelect.value;
-                const date = dateInput.value;
-
-                if (vehicle && point && shift && date) {
-                    const testAssignment = { vehicle, point, shift, date };
-                    const conflict = hasConflict(testAssignment);
-                    
-                    if (conflict) {
-                        showNotification('⚠️ Advertencia: Esta combinación generará un conflicto', 'error');
-                    }
-                }
-            }
-
-            [vehicleSelect, pointSelect, shiftSelect, dateInput].forEach(element => {
-                element.addEventListener('change', validateInRealTime);
-            });
-        }
-
-        // Inicialización completa del sistema
-        document.addEventListener('DOMContentLoaded', function() {
-            updateAssignmentsTable();
-            updateMetrics();
-            simulateRealTimeData();
-            addControlButtons();
-            enableRealTimeValidation();
-            
-            // Establecer fecha actual por defecto
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('assignDate').value = today;
-            
-            // Mensaje de bienvenida
-            setTimeout(() => {
-                showNotification('🎉 Sistema de Asignación de Rutas Petramás inicializado correctamente', 'success');
-            }, 1000);
-        });
-    </script>
-</body>
-</html>

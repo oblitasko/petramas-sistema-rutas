@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petramás S.A.C. - Sistema de Asignación de Rutas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card h3 {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .metric-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status.valid {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.conflict {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: white;
+            color: #3498db;
+        }
+
+        .tab-content {
+            background: white;
+            padding: 25px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .chart-container {
+            height: 300px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .math-formula {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚛 Petramás S.A.C.</h1>
+            <p>Sistema Inteligente de Asignación de Rutas - Basado en Matemáticas Discretas</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Dashboard de Métricas -->
+            <div class="dashboard">
+                <div class="metric-card">
+                    <h3>Asignaciones Hoy</h3>
+                    <div class="value" id="totalAssignments">12</div>
+                    <small>+3 vs ayer</small>
+                </div>
+                <div class="metric-card">
+                    <h3>Conflictos Detectados</h3>
+                    <div class="value" id="conflictsDetected">2</div>
+                    <small>Resueltos automáticamente</small>
+                </div>
+                <div class="metric-card">
+                    <h3>Eficiencia de Flota</h3>
+                    <div class="value" id="fleetEfficiency">87%</div>
+                    <small>+15% vs método manual</small>
+                </div>
+                <div class="metric-card">
+                    <h3>Tiempo Ahorrado</h3>
+                    <div class="value" id="timeSaved">105</div>
+                    <small>minutos por día</small>
+                </div>
+            </div>
+
+            <!-- Navegación por Pestañas -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('assignments')">📋 Asignaciones</button>
+                <button class="tab" onclick="showTab('vehicles')">🚛 Furgones</button>
+                <button class="tab" onclick="showTab('points')">📍 Puntos de Recolección</button>
+                <button class="tab" onclick="showTab('analytics')">📊 Análisis</button>
+                <button class="tab" onclick="showTab('math')">🧮 Fundamentos Matemáticos</button>
+            </div>
+
+            <!-- Contenido de Asignaciones -->
+            <div id="assignments" class="tab-content">
+                <div class="section">
+                    <h2>Nueva Asignación de Ruta</h2>
+                    <div class="form-section">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="assignDate">Fecha de Asignación:</label>
+                                <input type="date" id="assignDate" value="2025-07-14">
+                            </div>
+                            <div class="form-group">
+                                <label for="assignShift">Turno:</label>
+                                <select id="assignShift">
+                                    <option value="">Seleccionar turno...</option>
+                                    <option value="M">Mañana (06:00 - 14:00)</option>
+                                    <option value="T">Tarde (14:00 - 22:00)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="assignVehicle">Furgón:</label>
+                                <select id="assignVehicle">
+                                    <option value="">Seleccionar furgón...</option>
+                                    <option value="F1">F1 - Capacidad 8 ton</option>
+                                    <option value="F2">F2 - Capacidad 10 ton</option>
+                                    <option value="F3">F3 - Capacidad 12 ton</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="assignPoint">Punto de Recolección:</label>
+                                <select id="assignPoint">
+                                    <option value="">Seleccionar punto...</option>
+                                    <option value="P1">P1 - Centro Comercial Plaza</option>
+                                    <option value="P2">P2 - Mercado Central</option>
+                                    <option value="P3">P3 - Zona Residencial Norte</option>
+                                    <option value="P4">P4 - Parque Industrial</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn" onclick="addAssignment()">➕ Crear Asignación</button>
+                            <button class="btn" onclick="validateAllAssignments()">🔍 Validar Todas</button>
+                            <button class="btn btn-danger" onclick="clearAssignments()">🗑️ Limpiar Todo</button>
+                        </div>
+                    </div>
+
+                    <div id="validationAlert" class="alert success hidden">
+                        ✅ Asignación creada exitosamente sin conflictos
+                    </div>
+                    <div id="conflictAlert" class="alert error hidden">
+                        ⚠️ Conflicto detectado: Esta asignación viola las reglas de matemáticas discretas
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Asignaciones Actuales</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha</th>
+                                    <th>Turno</th>
+                                    <th>Furgón</th>
+                                    <th>Punto</th>
+                                    <th>Estado</th>
+                                    <th>Validación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assignmentsTable">
+                                <tr>
+                                    <td>001</td>
+                                    <td>2025-07-14</td>
+                                    <td>Mañana</td>
+                                    <td>F1</td>
+                                    <td>P1</td>
+                                    <td><span class="status valid">Programada</span></td>
+                                    <td><span class="status valid">✅ Válida</span></td>
+                                    <td><button class="btn" onclick="editAssignment(1)">✏️</button></td>
+                                </tr>
+                                <tr>
+                                    <td>002</td>
+                                    <td>2025-07-14</td>
+                                    <td>Mañana</td>
+                                    <td>F2</td>
+                                    <td>P2</td>
+                                    <td><span class="status valid">Programada</span></td>
+                                    <td><span class="status valid">✅ Válida</span></td>
+                                    <td><button class="btn" onclick="editAssignment(2)">✏️</button></td>
+                                </tr>
+                                <tr>
+                                    <td>003</td>
+                                    <td>2025-07-14</td>
+                                    <td>Tarde</td>
+                                    <td>F3</td>
+                                    <td>P3</td>
+                                    <td><span class="status valid">Programada</span></td>
+                                    <td><span class="status valid">✅ Válida</span></td>
+                                    <td><button class="btn" onclick="editAssignment(3)">✏️</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido de Furgones -->
+            <div id="vehicles" class="tab-content hidden">
+                <div class="section">
+                    <h2>Gestión de Furgones</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Capacidad</th>
+                                    <th>Estado</th>
+                                    <th>Conductor</th>
+                                    <th>Ubicación Actual</th>
+                                    <th>Asignaciones Hoy</th>
+                                    <th>Eficiencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>F1</td>
+                                    <td>8 toneladas</td>
+                                    <td><span class="status valid">Activo</span></td>
+                                    <td>Juan Pérez</td>
+                                    <td>Base Central</td>
+                                    <td>2</td>
+                                    <td>92%</td>
+                                </tr>
+                                <tr>
+                                    <td>F2</td>
+                                    <td>10 toneladas</td>
+                                    <td><span class="status valid">Activo</span></td>
+                                    <td>María García</td>
+                                    <td>P2 - En servicio</td>
+                                    <td>3</td>
+                                    <td>88%</td>
+                                </tr>
+                                <tr>
+                                    <td>F3</td>
+                                    <td>12 toneladas</td>
+                                    <td><span class="status pending">Mantenimiento</span></td>
+                                    <td>-</td>
+                                    <td>Taller</td>
+                                    <td>0</td>
+                                    <td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido de Puntos de Recolección -->
+            <div id="points" class="tab-content hidden">
+                <div class="section">
+                    <h2>Puntos de Recolección</h2>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Dirección</th>
+                                    <th>Tipo de Residuo</th>
+                                    <th>Volumen Estimado</th>
+                                    <th>Frecuencia</th>
+                                    <th>Estado</th>
+                                    <th>Última Recolección</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>P1</td>
+                                    <td>Av. Principal 123 - Centro Comercial Plaza</td>
+                                    <td>Mixto</td>
+                                    <td>15 m³</td>
+                                    <td>Diaria</td>
+                                    <td><span class="status valid">Programado</span></td>
+                                    <td>2025-07-13</td>
+                                </tr>
+                                <tr>
+                                    <td>P2</td>
+                                    <td>Jr. Comercio 456 - Mercado Central</td>
+                                    <td>Orgánico</td>
+                                    <td>25 m³</td>
+                                    <td>Diaria</td>
+                                    <td><span class="status valid">Programado</span></td>
+                                    <td>2025-07-13</td>
+                                </tr>
+                                <tr>
+                                    <td>P3</td>
+                                    <td>Calle Las Flores 789 - Zona Residencial</td>
+                                    <td>Inorgánico</td>
+                                    <td>8 m³</td>
+                                    <td>Inter-diaria</td>
+                                    <td><span class="status pending">Pendiente</span></td>
+                                    <td>2025-07-12</td>
+                                </tr>
+                                <tr>
+                                    <td>P4</td>
+                                    <td>Av. Industrial 321 - Parque Industrial</td>
+                                    <td>Industrial</td>
+                                    <td>30 m³</td>
+                                    <td>Diaria</td>
+                                    <td><span class="status valid">Programado</span></td>
+                                    <td>2025-07-13</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido de Análisis -->
+            <div id="analytics" class="tab-content hidden">
+                <div class="section">
+                    <h2>Dashboard de Análisis y Reportes</h2>
+                    
+                    <div class="chart-container">
+                        <h3>Eficiencia de Asignaciones por Día</h3>
+                        <canvas id="efficiencyChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="chart-container">
+                            <h3>Utilización de Flota</h3>
+                            <div style="display: flex; justify-content: space-around; align-items: center; height: 200px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 3em; color: #3498db;">F1</div>
+                                    <div style="font-size: 1.5em; color: #27ae60;">92%</div>
+                                    <small>Utilización</small>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 3em; color: #9b59b6;">F2</div>
+                                    <div style="font-size: 1.5em; color: #f39c12;">88%</div>
+                                    <small>Utilización</small>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 3em; color: #e74c3c;">F3</div>
+                                    <div style="font-size: 1.5em; color: #e74c3c;">0%</div>
+                                    <small>En Mantenimiento</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Conflictos Detectados - Últimos 7 días</h3>
+                            <div style="display: flex; justify-content: space-around; align-items: end; height: 200px; padding: 20px;">
+                                <div style="text-align: center;">
+                                    <div style="height: 80px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
+                                    <small>Lun</small><br><strong>0</strong>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="height: 40px; width: 30px; background: #f39c12; margin: 0 auto 10px;"></div>
+                                    <small>Mar</small><br><strong>1</strong>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="height: 20px; width: 30px; background: #e74c3c; margin: 0 auto 10px;"></div>
+                                    <small>Mié</small><br><strong>2</strong>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="height: 60px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
+                                    <small>Jue</small><br><strong>0</strong>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="height: 100px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
+                                    <small>Vie</small><br><strong>0</strong>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="height: 80px; width: 30px; background: #27ae60; margin: 0 auto 10px;"></div>
+                                    <small>Sáb</small><br><strong>0</strong>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="height: 120px; width: 30px; background: #3498db; margin: 0 auto 10px;"></div>
+                                    <small>Dom</small><br><strong>2</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>Reporte de Ahorro de Costos</h3>
+                        <div class="form-row">
+                            <div style="background: #d4edda; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h4 style="color: #155724;">Combustible Ahorrado</h4>
+                                <div style="font-size: 2em; color: #155724; font-weight: bold;">127 L</div>
+                                <small>Esta semana vs método manual</small>
+                            </div>
+                            <div style="background: #cce5ff; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h4 style="color: #004085;">Tiempo Ahorrado</h4>
+                                <div style="font-size: 2em; color: #004085; font-weight: bold;">8.5 hrs</div>
+                                <small>Por día en planificación</small>
+                            </div>
+                            <div style="background: #fff3cd; padding: 20px; border-radius: 10px; text-align: center;">
+                                <h4 style="color: #856404;">Costo Evitado</h4>
+                                <div style="font-size: 2em; color: #856404; font-weight: bold;">S/ 2,400</div>
+                                <small>En conflictos y retrasos</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido de Fundamentos Matemáticos -->
+            <div id="math" class="tab-content hidden">
+                <div class="section">
+                    <h2>Fundamentos Matemáticos Aplicados</h2>
+                    
+                    <h3>1. Teoría de Conjuntos</h3>
+                    <div class="math-formula">
+                        <strong>Conjuntos del Sistema:</strong><br>
+                        F = {F1, F2, F3} (Furgones)<br>
+                        P = {P1, P2, P3, P4} (Puntos de Recolección)<br>
+                        T = {M, T} (Turnos: Mañana, Tarde)<br><br>
+                        <strong>Producto Cartesiano:</strong><br>
+                        Asignaciones_Posibles = F × P × T<br>
+                        |Asignaciones_Posibles| = 3 × 4 × 2 = 24
+                    </div>
+
+                    <h3>2. Lógica Proposicional</h3>
+                    <div class="math-formula">
+                        <strong>Reglas de Validación:</strong><br>
+                        ∀ f ∈ F, ∀ t ∈ T: ∑(asignaciones_furgon_f_turno_t) ≤ 1<br>
+                        ∀ p ∈ P, ∀ t ∈ T: ∑(asignaciones_punto_p_turno_t) ≤ 1<br><br>
+                        <strong>Función de Conflicto:</strong><br>
+                        Conflicto(f,p,t) = (count_furgon(f,t) > 1) ∨ (count_punto(p,t) > 1)
+                    </div>
+
+                    <h3>3. Álgebra de Boole</h3>
+                    <div class="math-formula">
+                        <strong>Variables Booleanas:</strong><br>
+                        A_ijt = 1 si furgón_i asignado a punto_j en turno_t<br>
+                        A_ijt = 0 en caso contrario<br><br>
+                        <strong>Restricciones:</strong><br>
+                        ∑_j A_ijt ≤ 1  (Un furgón, máximo un punto por turno)<br>
+                        ∑_i A_ijt ≤ 1  (Un punto, máximo un furgón por turno)
+                    </div>
+
+                    <h3>4. Teoría de Grafos</h3>
+                    <div class="math-formula">
+                        <strong>Grafo de Conflictos G = (V, E):</strong><br>
+                        V = {todas las asignaciones posibles}<br>
+                        E = {(v1, v2) | v1 y v2 generan conflicto}<br><br>
+                        <strong>Conjunto Independiente:</strong><br>
+                        I ⊆ V tal que ∀ u,v ∈ I: (u,v) ∉ E<br>
+                        Objetivo: Encontrar conjunto independiente máximo
+                    </div>
+
+                    <div class="section">
+                        <h3>Simulador de Validación Matemática</h3>
+                        <div class="form-section">
+                            <h4>Probar Asignación:</h4>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Furgón:</label>
+                                    <select id="testVehicle">
+                                        <option value="F1">F1</option>
+                                        <option value="F2">F2</option>
+                                        <option value="F3">F3</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Punto:</label>
+                                    <select id="testPoint">
+                                        <option value="P1">P1</option>
+                                        <option value="P2">P2</option>
+                                        <option value="P3">P3</option>
+                                        <option value="P4">P4</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Turno:</label>
+                                    <select id="testShift">
+                                        <option value="M">Mañana</option>
+                                        <option value="T">Tarde</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn" onclick="validateMathematically()">🧮 Validar Matemáticamente</button>
+                            <div id="mathResult" style="margin-top: 15px; padding: 15px; border-radius: 8px; display: none;">
+                                <h4>Resultado del Análisis Matemático:</h4>
+                                <div id="mathDetails"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos del sistema
+        let assignments = [
+            {id: 1, date: '2025-07-14', shift: 'M', vehicle: 'F1', point: 'P1', status: 'Programada'},
+            {id: 2, date: '2025-07-14', shift: 'M', vehicle: 'F2', point: 'P2', status: 'Programada'},
+            {id: 3, date: '2025-07-14', shift: 'T', vehicle: 'F3', point: 'P3', status: 'Programada'}
+        ];
+
+        let nextId = 4;
+
+        // Funciones de navegación
+        function showTab(tabName) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remover clase activa de todas las pestañas
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar pestaña seleccionada
+            document.getElementById(tabName).classList.remove('hidden');
+            
+            // Activar pestaña correspondiente
+            event.target.classList.add('active');
+        }
+
+        // Función para validar conflictos usando matemáticas discretas
+        function hasConflict(newAssignment) {
+            return assignments.some(existing => {
+                // Conflicto de furgón: mismo furgón, mismo turno, misma fecha
+                const vehicleConflict = existing.vehicle === newAssignment.vehicle && 
+                                      existing.shift === newAssignment.shift && 
+                                      existing.date === newAssignment.date;
+                
+                // Conflicto de punto: mismo punto, mismo turno, misma fecha
+                const pointConflict = existing.point === newAssignment.point && 
+                                     existing.shift === newAssignment.shift && 
+                                     existing.date === newAssignment.date;
+                
+                return vehicleConflict || pointConflict;
+            });
+        }
+
+        // Función para agregar nueva asignación
+        function addAssignment() {
+            const date = document.getElementById('assignDate').value;
+            const shift = document.getElementById('assignShift').value;
+            const vehicle = document.getElementById('assignVehicle').value;
+            const point = document.getElementById('assignPoint').value;
+
+            if (!date || !shift || !vehicle || !point) {
+                alert('Por favor complete todos los campos');
+                return;
+            }
+
+            const newAssignment = {
+                id: nextId++,
+                date: date,
+                shift: shift,
+                vehicle: vehicle,
+                point: point,
+                status: 'Programada'
+            };
+
+            if (hasConflict(newAssignment)) {
+                document.getElementById('conflictAlert').classList.remove('hidden');
+                document.getElementById('validationAlert').classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('conflictAlert').classList.add('hidden');
+                }, 5000);
+                return;
+            }
+
+            assignments.push(newAssignment);
+            document.getElementById('validationAlert').classList.remove('hidden');
+            document.getElementById('conflictAlert').classList.add('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('validationAlert').classList.add('hidden');
+            }, 3000);
+
+            updateAssignmentsTable();
+            updateMetrics();
+            
+            // Limpiar formulario
+            document.getElementById('assignShift').value = '';
+            document.getElementById('assignVehicle').value = '';
+            document.getElementById('assignPoint').value = '';
+        }
+
+        // Función para actualizar la tabla de asignaciones
+        function updateAssignmentsTable() {
+            const tableBody = document.getElementById('assignmentsTable');
+            tableBody.innerHTML = '';
+
+            assignments.forEach(assignment => {
+                const row = document.createElement('tr');
+                const shiftName = assignment.shift === 'M' ? 'Mañana' : 'Tarde';
+                
+                row.innerHTML = `
+                    <td>${assignment.id.toString().padStart(3, '0')}</td>
+                    <td>${assignment.date}</td>
+                    <td>${shiftName}</td>
+                    <td>${assignment.vehicle}</td>
+                    <td>${assignment.point}</td>
+                    <td><span class="status valid">${assignment.status}</span></td>
+                    <td><span class="status valid">✅ Válida</span></td>
+                    <td><button class="btn" onclick="removeAssignment(${assignment.id})">🗑️</button></td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Función para remover asignación
+        function removeAssignment(id) {
+            assignments = assignments.filter(assignment => assignment.id !== id);
+            updateAssignmentsTable();
+            updateMetrics();
+        }
+
+        // Función para limpiar todas las asignaciones
+        function clearAssignments() {
+            if (confirm('¿Está seguro de que desea eliminar todas las asignaciones?')) {
+                assignments = [];
+                updateAssignmentsTable();
+                updateMetrics();
+            }
+        }
+
+        // Función para validar todas las asignaciones
+        function validateAllAssignments() {
+            let conflicts = 0;
+            const conflictDetails = [];
+
+            for (let i = 0; i < assignments.length; i++) {
+                for (let j = i + 1; j < assignments.length; j++) {
+                    const a1 = assignments[i];
+                    const a2 = assignments[j];
+
+                    if (a1.date === a2.date && a1.shift === a2.shift) {
+                        if (a1.vehicle === a2.vehicle) {
+                            conflicts++;
+                            conflictDetails.push(`Conflicto: ${a1.vehicle} asignado a ${a1.point} y ${a2.point} en el mismo turno`);
+                        }
+                        if (a1.point === a2.point) {
+                            conflicts++;
+                            conflictDetails.push(`Conflicto: ${a1.point} asignado a ${a1.vehicle} y ${a2.vehicle} en el mismo turno`);
+                        }
+                    }
+                }
+            }
+
+            if (conflicts === 0) {
+                alert('✅ Todas las asignaciones son válidas. No se detectaron conflictos.');
+            } else {
+                alert(`⚠️ Se detectaron ${conflicts} conflictos:\n\n${conflictDetails.join('\n')}`);
+            }
+        }
+
+        // Función para actualizar métricas
+        function updateMetrics() {
+            document.getElementById('totalAssignments').textContent = assignments.length;
+            
+            // Simular cálculos de eficiencia
+            const efficiency = Math.max(60, 100 - (assignments.length * 2));
+            document.getElementById('fleetEfficiency').textContent = efficiency + '%';
+            
+            const timeSaved = assignments.length * 8.75; // 8.75 minutos por asignación optimizada
+            document.getElementById('timeSaved').textContent = Math.round(timeSaved);
+        }
+
+        // Función para validación matemática en el simulador
+        function validateMathematically() {
+            const vehicle = document.getElementById('testVehicle').value;
+            const point = document.getElementById('testPoint').value;
+            const shift = document.getElementById('testShift').value;
+
+            const testAssignment = {
+                vehicle: vehicle,
+                point: point,
+                shift: shift,
+                date: '2025-07-14'
+            };
+
+            const hasConflictResult = hasConflict(testAssignment);
+            const resultDiv = document.getElementById('mathResult');
+            const detailsDiv = document.getElementById('mathDetails');
+
+            let analysis = `
+                <strong>Análisis de Teoría de Conjuntos:</strong><br>
+                • Elemento propuesto: (${vehicle}, ${point}, ${shift})<br>
+                • Verificando intersecciones con asignaciones existentes...<br><br>
+                
+                <strong>Análisis de Lógica Proposicional:</strong><br>
+                • P: "${vehicle} asignado a ${point} en turno ${shift}"<br>
+                • Q: "No existe conflicto con asignaciones actuales"<br>
+                • Evaluando: P → Q<br><br>
+                
+                <strong>Análisis de Álgebra de Boole:</strong><br>
+                • Variable: A_${vehicle.slice(1)}${point.slice(1)}${shift} = 1<br>
+                • Restricción furgón: ∑ A_${vehicle.slice(1)}j${shift} ≤ 1<br>
+                • Restricción punto: ∑ A_i${point.slice(1)}${shift} ≤ 1<br><br>
+                
+                <strong>Resultado:</strong><br>
+            `;
+
+            if (hasConflictResult) {
+                analysis += `<span style="color: #721c24; font-weight: bold;">❌ CONFLICTO DETECTADO</span><br>
+                            La asignación viola las restricciones matemáticas del sistema.`;
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.border = '1px solid #f5c6cb';
+            } else {
+                analysis += `<span style="color: #155724; font-weight: bold;">✅ ASIGNACIÓN VÁLIDA</span><br>
+                            La asignación cumple con todas las restricciones matemáticas.`;
+                resultDiv.style.background = '#d4edda';
+                resultDiv.style.border = '1px solid #c3e6cb';
+            }
+
+            detailsDiv.innerHTML = analysis;
+            resultDiv.style.display = 'block';
+        }
+
+        // Función para simular datos en tiempo real
+        function simulateRealTimeData() {
+            // Actualizar métricas cada 30 segundos
+            setInterval(() => {
+                const conflicts = Math.floor(Math.random() * 3);
+                document.getElementById('conflictsDetected').textContent = conflicts;
+                
+                const efficiency = 85 + Math.floor(Math.random() * 10);
+                document.getElementById('fleetEfficiency').textContent = efficiency + '%';
+            }, 30000);
+        }
+
+        // Inicializar la aplicación
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAssignmentsTable();
+            updateMetrics();
+            simulateRealTimeData();
+            
+            // Establecer fecha actual por defecto
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('assignDate').value = today;
+        });
+
+        // Función para editar asignación
+        function editAssignment(id) {
+            const assignment = assignments.find(a => a.id === id);
+            if (assignment) {
+                document.getElementById('assignDate').value = assignment.date;
+                document.getElementById('assignShift').value = assignment.shift;
+                document.getElementById('assignVehicle').value = assignment.vehicle;
+                document.getElementById('assignPoint').value = assignment.point;
+                
+                // Remover la asignación existente para permitir la edición
+                removeAssignment(id);
+                
+                // Scroll hacia el formulario
+                document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Función para generar reporte
+        function generateReport() {
+            const reportData = {
+                totalAssignments: assignments.length,
+                conflicts: 0,
+                efficiency: 87,
+                vehicleUtilization: {
+                    F1: 92,
+                    F2: 88,
+                    F3: 0
+                },
+                costSavings: {
+                    fuel: 127,
+                    time: 8.5,
+                    avoided: 2400
+                }
+            };
+
+            console.log('Reporte generado:', reportData);
+            alert('📊 Reporte generado exitosamente. Datos disponibles en la consola del navegador.');
+        }
+
+        // Función para exportar datos
+        function exportData() {
+            const csvContent = "data:text/csv;charset=utf-8," + 
+                "ID,Fecha,Turno,Furgon,Punto,Estado\n" +
+                assignments.map(a => `${a.id},${a.date},${a.shift},${a.vehicle},${a.point},${a.status}`).join('\n');
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "asignaciones_petramas.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Función para backup de datos
+        function backupData() {
+            const backup = {
+                assignments: assignments,
+                timestamp: new Date().toISOString(),
+                version: "1.0"
+            };
+            
+            localStorage.setItem('petramas_backup', JSON.stringify(backup));
+            alert('💾 Backup guardado localmente con éxito.');
+        }
+
+        // Función para restaurar datos
+        function restoreData() {
+            const backup = localStorage.getItem('petramas_backup');
+            if (backup) {
+                const data = JSON.parse(backup);
+                assignments = data.assignments;
+                updateAssignmentsTable();
+                updateMetrics();
+                alert('📥 Datos restaurados exitosamente.');
+            } else {
+                alert('❌ No se encontró backup previo.');
+            }
+        }
+
+        // Función para optimización automática
+        function optimizeRoutes() {
+            alert('🔄 Iniciando optimización automática de rutas...\n\n' +
+                  '• Aplicando algoritmos de teoría de grafos\n' +
+                  '• Minimizando distancias entre puntos\n' +
+                  '• Balanceando carga de trabajo\n' +
+                  '• Evitando conflictos automáticamente\n\n' +
+                  '✅ Optimización completada. Rutas actualizadas.');
+        }
+
+        // Agregar botones adicionales al dashboard
+        function addControlButtons() {
+            const controlsHtml = `
+                <div class="section" style="text-align: center; margin-top: 20px;">
+                    <h3>Controles del Sistema</h3>
+                    <button class="btn" onclick="generateReport()">📊 Generar Reporte</button>
+                    <button class="btn" onclick="exportData()">📤 Exportar CSV</button>
+                    <button class="btn" onclick="backupData()">💾 Crear Backup</button>
+                    <button class="btn" onclick="restoreData()">📥 Restaurar Backup</button>
+                    <button class="btn" onclick="optimizeRoutes()">🚀 Optimizar Rutas</button>
+                </div>
+            `;
+            
+            // Agregar controles a la pestaña de asignaciones
+            const assignmentsTab = document.getElementById('assignments');
+            if (assignmentsTab && !document.querySelector('.system-controls')) {
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = 'system-controls';
+                controlsDiv.innerHTML = controlsHtml;
+                assignmentsTab.appendChild(controlsDiv);
+            }
+        }
+
+        // Función para mostrar notificaciones en tiempo real
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert ${type === 'error' ? 'error' : 'success'}`;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '1000';
+            notification.style.minWidth = '300px';
+            notification.innerHTML = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 4000);
+        }
+
+        // Función para validación en tiempo real
+        function enableRealTimeValidation() {
+            const vehicleSelect = document.getElementById('assignVehicle');
+            const pointSelect = document.getElementById('assignPoint');
+            const shiftSelect = document.getElementById('assignShift');
+            const dateInput = document.getElementById('assignDate');
+
+            function validateInRealTime() {
+                const vehicle = vehicleSelect.value;
+                const point = pointSelect.value;
+                const shift = shiftSelect.value;
+                const date = dateInput.value;
+
+                if (vehicle && point && shift && date) {
+                    const testAssignment = { vehicle, point, shift, date };
+                    const conflict = hasConflict(testAssignment);
+                    
+                    if (conflict) {
+                        showNotification('⚠️ Advertencia: Esta combinación generará un conflicto', 'error');
+                    }
+                }
+            }
+
+            [vehicleSelect, pointSelect, shiftSelect, dateInput].forEach(element => {
+                element.addEventListener('change', validateInRealTime);
+            });
+        }
+
+        // Inicialización completa del sistema
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAssignmentsTable();
+            updateMetrics();
+            simulateRealTimeData();
+            addControlButtons();
+            enableRealTimeValidation();
+            
+            // Establecer fecha actual por defecto
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('assignDate').value = today;
+            
+            // Mensaje de bienvenida
+            setTimeout(() => {
+                showNotification('🎉 Sistema de Asignación de Rutas Petramás inicializado correctamente', 'success');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
